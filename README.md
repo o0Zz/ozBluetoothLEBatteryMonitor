@@ -2,11 +2,10 @@
 
 ![Banner Gif of Tray](https://i.imgur.com/r18xM3j.png)
 
-
 ### Introduction
 The Bluetooth Battery Monitor adds a small and simple battery display to your system tray. These battery displays allow you to see the life of Bluetooth devices connected to your computer.
 
- **Notifications**   
+**Notifications**   
 Whenever a device drops below 20%, a notification will play if activated.  
 **Auto Startup**  
 When activated, the application will start automatically at system startup.  
@@ -16,20 +15,15 @@ You can change how often the system looks for and updates the battery charge lev
 ### Quick Start Guide
 Follow the directions below to get started!
 
- **Step 1.** Download the necessary file. [Latest Release](https://github.com/o0Zz/ozBluetoothLEBatteryMonitor/archive/refs/heads/master.zip)
+**Step 1.** Download BluetoothLEBatteryMonitor.exe. [Latest Release](https://github.com/o0Zz/ozBluetoothLEBatteryMonitor/releases)
 
-**Step 2.** Extract the main file from the zip folder.
+**Step 2.** Double click *BluetoothLEBatteryMonitor.exe*
 
-**Step 3.** Double click *BluetoothLEBatteryMonitor.exe*
-
-**Step 4.** Open the system tray balloon and locate the battery icon with the Bluetooth symbol in the center. Move this to the main tray.
+**Step 3.** Open the system tray balloon and locate the battery icon with the Bluetooth symbol in the center. Move this to the main tray.
 
 **Step 5.** Right-click the icon and select exit to shut down the program. Select setting to adjust settings.
 
-*Start on startup is not activated by default. This must be switched on in the setting or else it will need to be manually started every time.*
-
-<br />
-<br />
+*Start on startup is not activated by default. This must be switched on in the setting or it will need to be manually started every time.*
 
 # ⚙️Settings and Configuration⚙️
 ![Settings Banner Photo](https://i.imgur.com/HuXtQqF.jpeg)
@@ -49,9 +43,6 @@ When the application is powered up you will find a battery with a Bluetooth icon
 
 - [x] Refresh [5 min Default]
   - This option allows you to adjust how often the application will pull and update the battery displays.
-
-<br />
-<br />
 
   # 🔧Troubleshooting🔧
 
@@ -79,7 +70,6 @@ When the application is powered up you will find a battery with a Bluetooth icon
 - Duplicate Battery Icons
   - Exit out of all and manually restart application
     > If the application is opened more than once it can produce multiple icons as it is running multiple instances in the background. Right clicking adn exiting all of them and then manually starting the application again should fix this.
-
 
 ### References
 - https://github.com/MUedsa/BluetoothLEBatteryMonitor/
