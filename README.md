@@ -1,4 +1,4 @@
-# Oz's Bluetooth Battery Monitor
+# 🔋Oz's Bluetooth Battery Monitor
 
 ![Banner Gif of Tray](https://i.imgur.com/r18xM3j.png)
 
@@ -31,12 +31,12 @@ Follow the directions below to get started!
 <br />
 <br />
 
-# Settings and Configuration
+# ⚙️Settings and Configuration⚙️
 ![Settings Banner Photo](https://i.imgur.com/HuXtQqF.jpeg)
 ### How to Access Settings
 When the application is powered up you will find a battery with a Bluetooth icon in the system tray. Right-click this and select *Settings*.
 
-### Settings Breakdown
+### Settings Breakdown 
 
 - [ ] Launch application on startup
   - *[Off by Default]* When activated it will automatically boot up this program when Windows starts up.
@@ -53,7 +53,7 @@ When the application is powered up you will find a battery with a Bluetooth icon
 <br />
 <br />
 
-  # Troubleshooting
+  # 🔧Troubleshooting🔧
 
 - Battery icon not in system tray
   - Check in the system tray pop-up 
