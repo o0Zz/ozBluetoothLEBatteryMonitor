@@ -54,12 +54,27 @@ When the application is powered up you will find a battery with a bluetooth icon
 
   # Troubleshooting
 
-| Problem|Solution|Explanation|   |   |   |   |   |   |   |
-|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|---|---|---|---|---|---|
-| Battery icon not in system tray       | Check in the system tray pop-up or Manually start the application again                                                      | On first startup, the battery icon will go into the pop-up menu in the system tray, not the main tray. If you can't find it anywhere it's possible there was an issue starting the application. Manually starting the program can help restart it.                                                                                                                   |   |   |   |   |   |   |   |
-| Battery shows -1%                     | Allow for the refresh timer to pass and check again or exit and restart the application                                      | he application only samples the battery charge level every 5 min by default. This time is adjustable in the settings. If you add a device it will not display a charge level until it has been sampled. If you give it time and it still does not show then exiting and restarting the program should help.                                                          |   |   |   |   |   |   |   |
-| Not auto starting on system startup   | Check to make sure this feature is activated in the application settings and Check it is enabled on the system startup page  | By default this feature is disabled. If you want the application to power up on startup then it needs to be enabled in the setting of the application. See the setting section on how to do this. If it still won't start on startup then go into task manager and move to the start up tab. Ensure it is enabled here as well.                                      |   |   |   |   |   |   |   |
-| Not sending low battery notifications | Check that the notifications are enabled in settings and ensure notifications are not disabled for Windows or application. Exit and restart the application if the problem persist|If you are not getting the low power notifications then you should first check that they are enabled in the application settings. If you still have no notifications, check that they are not disabled in the Windows settings. If you give it time and it still does not show then exiting and restarting the program should help. | 
+- Battery icon not in system tray
+  - Check in the system tray pop-up 
+  - Manually start the application again
+    > On first startup, the battery icon will go into the pop-up menu in the system tray, not the main tray. If you can't find it anywhere it's possible there was an issue starting the application. Manually starting the program can help restart it.
+
+- Battery shows -1%
+  - Allow for the refresh timer to pass and check again 
+  - Exit and restart the application
+    > The application only samples the battery charge level every 5 min by default. This time is adjustable in the settings. If you add a device it will not display a charge level until it has been sampled. If you give it time and it still does not show then exiting and restarting the program should help.
+
+- Not auto starting on system startup
+  - Check to make sure this feature is activated in the application settings
+  - Check it is enabled on the system startup page
+    > By default this feature is disabled. If you want the application to power up on startup then it needs to be enabled in the setting of the application. See the setting section on how to do this. If it still won't start on startup then go into task manager and move to the start up tab. Ensure it is enabled here as well.
+
+- Not sending low battery notifications
+  - Check that the notifications are enabled in settings
+  - Ensure notifications are not disabled for Windows or application 
+  - Exit and restart the application if the problem persist
+    >If you are not getting the low power notifications then you should first check that they are enabled in the application settings. If you still have no notifications, check that they are not disabled in the Windows settings. If you give it time and it still does not show then exiting and restarting the program should help.
+
 
 ### References
 - https://github.com/MUedsa/BluetoothLEBatteryMonitor/
