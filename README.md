@@ -76,6 +76,10 @@ When the application is powered up you will find a battery with a Bluetooth icon
   - Exit and restart the application if the problem persists
     >If you are not getting the low power notifications then you should first check that they are enabled in the application settings. If you still have no notifications, check that they are not disabled in the Windows settings. If you give it time and it still does not show then exiting and restarting the program should help.
 
+- Duplicate Battery Icons
+  - Exit out of all and manually restart application
+    > If the application is opened more than once it can produce multiple icons as it is running multiple instances in the background. Right clicking adn exiting all of them and then manually starting the application again should fix this.
+
 
 ### References
 - https://github.com/MUedsa/BluetoothLEBatteryMonitor/
