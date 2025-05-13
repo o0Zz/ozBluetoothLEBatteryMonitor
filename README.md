@@ -16,7 +16,7 @@ You can change how often the system looks for and updates the battery charge lev
 ### Quick Start Guide
 Follow the directions below to get started!
 
- **Step 1.** Download the necessary file. [Latest Release](https://github.com/o0Zz/ozBluetoothLEBatteryMonitor.git)
+ **Step 1.** Download the necessary file. [Latest Release](https://github.com/o0Zz/ozBluetoothLEBatteryMonitor/archive/refs/heads/master.zip)
 
 **Step 2.** Extract the main file from the zip folder.
 
