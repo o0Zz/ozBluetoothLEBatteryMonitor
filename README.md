@@ -1,10 +1,16 @@
 # Oz's Bluetooth Battery Monitor
 
-![Banner Gif of Tray](Docs\Photos\gif_bat_tx_banner.gif)
+![Banner Gif of Tray](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWpvZ2ZwMGJrY3R3bDJmb3BqYmg4a2t0MzNucGFxZzgxYjNiN2VmNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/litgGrkazhyxXO3Gwl/giphy.gif)
 
 
 ### Introduction
-The Bluetooth Battery Monitor adds a small and simple battery display to your system tray. These battery displays allow you to see the life of bluetooth devices connected to your computer. The system can also be configured to show a notification when the battery of one of your devices falls below 20%. 
+The Bluetooth Battery Monitor adds a small and simple battery display to your system tray. These battery displays allow you to see the life of bluetooth devices connected to your computer.
+
+#### Notifications
+Whenever a device drops below 20%, a notification will play if activated.
+
+#### Auto Startup
+When activated, the application will startup automatically at system startup.
 
 ### Quick Start Guide
 Follow the directions below to get started!
@@ -25,7 +31,7 @@ Follow the directions below to get started!
 <br />
 
 # Settings and Configuration
-![Settings Banner Photo](Docs\Photos\gif_bat_set_banner.gif)
+![Settings Banner Photo](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExanYyMWp3bDU0eDl3eDVzcWViNjdneWFrbHZzc2RrODg1dGIxczNvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fZ8r6dPnRu42w9boy5/giphy.gif)
 ### How to Access Settings
 When the application is powered up you will find a battery with a bluetooth icon in the system tray. Right click this and select *Settings*.
 
@@ -48,7 +54,7 @@ When the application is powered up you will find a battery with a bluetooth icon
 
   # Troubleshooting
 
-| Problem                               | Solution                                                                                                                     | Explanation                                                                                                                                                                                                                                                                                                                                                          |   |   |   |   |   |   |   |
+| Problem|Solution|Explanation|   |   |   |   |   |   |   |
 |---------------------------------------|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|---|---|---|---|---|---|
 | Battery icon not in system tray       | Check in the system tray pop-up or Manually start the application again                                                      | On first startup, the battery icon will go into the pop-up menu in the system tray, not the main tray. If you can't find it anywhere it's possible there was an issue starting the application. Manually starting the program can help restart it.                                                                                                                   |   |   |   |   |   |   |   |
 | Battery shows -1%                     | Allow for the refresh timer to pass and check again or exit and restart the application                                      | he application only samples the battery charge level every 5 min by default. This time is adjustable in the settings. If you add a device it will not display a charge level until it has been sampled. If you give it time and it still does not show then exiting and restarting the program should help.                                                          |   |   |   |   |   |   |   |
