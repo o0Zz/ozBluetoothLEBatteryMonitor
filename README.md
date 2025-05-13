@@ -1,16 +1,17 @@
 # Oz's Bluetooth Battery Monitor
 
-![Banner Gif of Tray](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWpvZ2ZwMGJrY3R3bDJmb3BqYmg4a2t0MzNucGFxZzgxYjNiN2VmNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/litgGrkazhyxXO3Gwl/giphy.gif)
+![Banner Gif of Tray](https://i.imgur.com/r18xM3j.png)
 
 
 ### Introduction
 The Bluetooth Battery Monitor adds a small and simple battery display to your system tray. These battery displays allow you to see the life of bluetooth devices connected to your computer.
 
-#### Notifications
-Whenever a device drops below 20%, a notification will play if activated.
-
-#### Auto Startup
-When activated, the application will startup automatically at system startup.
+> **Notifications**   
+Whenever a device drops below 20%, a notification will play if activated.  
+**Auto Startup**  
+When activated, the application will startup automatically at system startup.  
+**Adjustable Refresh Rate**
+You can change how often the system looks for and updates the battery charge levels.
 
 ### Quick Start Guide
 Follow the directions below to get started!
@@ -31,7 +32,7 @@ Follow the directions below to get started!
 <br />
 
 # Settings and Configuration
-![Settings Banner Photo](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExanYyMWp3bDU0eDl3eDVzcWViNjdneWFrbHZzc2RrODg1dGIxczNvYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fZ8r6dPnRu42w9boy5/giphy.gif)
+![Settings Banner Photo](https://i.imgur.com/HuXtQqF.jpeg)
 ### How to Access Settings
 When the application is powered up you will find a battery with a bluetooth icon in the system tray. Right click this and select *Settings*.
 
