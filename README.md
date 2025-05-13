@@ -1,11 +1,59 @@
-# Introduction
-The project is intend to provide a way to easily get the battery level of Bluetooth Low Energy peripherals.
+# Oz's Bluetooth Battery Monitor
 
-# Help
-This application automatically discover all bluetoothLE devices paired to your PC.
-The battery icon, in systray, display the lowest bluetoothLE device battery level.
-The battery level of all devices is displayed in systray balloon.
-A notification is automatically triggered when a battery level reach 20%
+![Banner Gif of Tray](Docs\Photos\gif_bat_tx_banner.gif)
 
-# References
+
+### Introduction
+The Bluetooth Battery Monitor adds a small and simple battery display to your system tray. These battery displays allow you to see the life of bluetooth devices connected to your computer. The system can also be configured to show a notification when the battery of one of your devices falls below 20%. 
+
+### Quick Start Guide
+Follow the directions below to get started!
+
+> **Step 1.** Download the necessary file. [Latest Release](https://github.com/o0Zz/ozBluetoothLEBatteryMonitor.git)
+
+>**Step 2.** Extract the main file from the zip folder.
+
+>**Step 3.** Double click *BluetoothLEBatteryMonitor.exe*
+
+>**Step 4.** Open the system tray ballon and locate the battery icon with the bluetooth symbol in the center. Move this to main tray.
+
+>**Step 5.** Right click the icon and select exit to shut down the program. Select setting to adjust settings.
+
+*Start on startup is not activated by default. This must be switched on in the setting or else it will need to be manual started every time.*
+
+<br />
+<br />
+
+# Settings and Configuration
+![Settings Banner Photo](Docs\Photos\gif_bat_set_banner.gif)
+### How to Access Settings
+When the application is powered up you will find a battery with a bluetooth icon in the system tray. Right click this and select *Settings*.
+
+### Settings Breakdown
+
+- [ ] Launch application on startup
+  - *[Off by Default]* When activated it will automatically boot up this program when windows starts up.
+
+- [x] Enable Notifications
+  - When the battery of one of your bluetooth devices drops below 20%, it will display a notification.
+
+- [x] Automatically detect new devices (If unchecked, detect device only during startup)
+  - By default the system will continuosly search for new bluetooth devices to monitor. If you want it to only search once when the computer first starts then disable this option.
+
+- Refresh [5 min Default]
+  - This option allows you to adjust how often the application will pull and update the battery displays.
+
+<br />
+<br />
+
+  # Troubleshooting
+
+| Problem                               | Solution                                                                                                                     | Explanation                                                                                                                                                                                                                                                                                                                                                          |   |   |   |   |   |   |   |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|---|---|---|---|---|---|
+| Battery icon not in system tray       | Check in the system tray pop-up or Manually start the application again                                                      | On first startup, the battery icon will go into the pop-up menu in the system tray, not the main tray. If you can't find it anywhere it's possible there was an issue starting the application. Manually starting the program can help restart it.                                                                                                                   |   |   |   |   |   |   |   |
+| Battery shows -1%                     | Allow for the refresh timer to pass and check again or exit and restart the application                                      | he application only samples the battery charge level every 5 min by default. This time is adjustable in the settings. If you add a device it will not display a charge level until it has been sampled. If you give it time and it still does not show then exiting and restarting the program should help.                                                          |   |   |   |   |   |   |   |
+| Not auto starting on system startup   | Check to make sure this feature is activated in the application settings and Check it is enabled on the system startup page  | By default this feature is disabled. If you want the application to power up on startup then it needs to be enabled in the setting of the application. See the setting section on how to do this. If it still won't start on startup then go into task manager and move to the start up tab. Ensure it is enabled here as well.                                      |   |   |   |   |   |   |   |
+| Not sending low battery notifications | Check that the notifications are enabled in settings and ensure notifications are not disabled for Windows or application. Exit and restart the application if the problem persist|If you are not getting the low power notifications then you should first check that they are enabled in the application settings. If you still have no notifications, check that they are not disabled in the Windows settings. If you give it time and it still does not show then exiting and restarting the program should help. | 
+
+### References
 - https://github.com/MUedsa/BluetoothLEBatteryMonitor/
