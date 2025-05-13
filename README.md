@@ -2,7 +2,7 @@
 
 ![Banner Gif of Tray](https://i.imgur.com/r18xM3j.png)
 
-### Introduction
+## Introduction
 The Bluetooth Battery Monitor adds a small and simple battery display to your system tray. These battery displays allow you to see the life of Bluetooth devices connected to your computer.
 
 **Notifications**   
@@ -12,7 +12,7 @@ When activated, the application will start automatically at system startup.
 **Adjustable Refresh Rate**  
 You can change how often the system looks for and updates the battery charge levels.
 
-### Quick Start Guide
+## Quick Start Guide
 Follow the directions below to get started!
 
 **Step 1.** Download BluetoothLEBatteryMonitor.exe. [Latest Release](https://github.com/o0Zz/ozBluetoothLEBatteryMonitor/releases)
@@ -25,7 +25,7 @@ Follow the directions below to get started!
 
 *Start on startup is not activated by default. This must be switched on in the setting or it will need to be manually started every time.*
 
-# ⚙️Settings and Configuration⚙️
+## ⚙️Settings and Configuration⚙️
 ![Settings Banner Photo](https://i.imgur.com/HuXtQqF.jpeg)
 ### How to Access Settings
 When the application is powered up you will find a battery with a Bluetooth icon in the system tray. Right-click this and select *Settings*.
@@ -44,7 +44,7 @@ When the application is powered up you will find a battery with a Bluetooth icon
 - [x] Refresh [5 min Default]
   - This option allows you to adjust how often the application will pull and update the battery displays.
 
-  # 🔧Troubleshooting🔧
+## 🔧Troubleshooting🔧
 
 - Battery icon not in system tray
   - Check in the system tray pop-up 
