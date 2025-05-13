@@ -58,24 +58,24 @@
             this.toolStripMenuItem1,
             this.exitToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip1";
-            this.contextMenuStrip.Size = new System.Drawing.Size(117, 54);
+            this.contextMenuStrip.Size = new System.Drawing.Size(132, 58);
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(131, 24);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(113, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(128, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(131, 24);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -92,11 +92,11 @@
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.numericUpDownRefreshPeriod);
             this.groupBox1.Controls.Add(this.checkBoxStartup);
-            this.groupBox1.Location = new System.Drawing.Point(25, 24);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
+            this.groupBox1.Location = new System.Drawing.Point(33, 30);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox1.Size = new System.Drawing.Size(423, 123);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.groupBox1.Size = new System.Drawing.Size(564, 151);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Settings";
@@ -104,10 +104,10 @@
             // checkBoxScanForEver
             // 
             this.checkBoxScanForEver.AutoSize = true;
-            this.checkBoxScanForEver.Location = new System.Drawing.Point(17, 64);
-            this.checkBoxScanForEver.Margin = new System.Windows.Forms.Padding(2);
+            this.checkBoxScanForEver.Location = new System.Drawing.Point(23, 79);
+            this.checkBoxScanForEver.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.checkBoxScanForEver.Name = "checkBoxScanForEver";
-            this.checkBoxScanForEver.Size = new System.Drawing.Size(404, 17);
+            this.checkBoxScanForEver.Size = new System.Drawing.Size(495, 20);
             this.checkBoxScanForEver.TabIndex = 5;
             this.checkBoxScanForEver.Text = "Automatically detect new devices (If uncheck, detect device only during startup)";
             this.checkBoxScanForEver.UseVisualStyleBackColor = true;
@@ -116,10 +116,10 @@
             // checkBoxNotification
             // 
             this.checkBoxNotification.AutoSize = true;
-            this.checkBoxNotification.Location = new System.Drawing.Point(17, 43);
-            this.checkBoxNotification.Margin = new System.Windows.Forms.Padding(2);
+            this.checkBoxNotification.Location = new System.Drawing.Point(23, 53);
+            this.checkBoxNotification.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.checkBoxNotification.Name = "checkBoxNotification";
-            this.checkBoxNotification.Size = new System.Drawing.Size(118, 17);
+            this.checkBoxNotification.Size = new System.Drawing.Size(145, 20);
             this.checkBoxNotification.TabIndex = 4;
             this.checkBoxNotification.Text = "Enable notifications";
             this.checkBoxNotification.UseVisualStyleBackColor = true;
@@ -128,24 +128,27 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(169, 90);
+            this.label4.Location = new System.Drawing.Point(225, 111);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(23, 13);
+            this.label4.Size = new System.Drawing.Size(28, 16);
             this.label4.TabIndex = 3;
             this.label4.Text = "min";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(15, 90);
+            this.label3.Location = new System.Drawing.Point(20, 111);
+            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(82, 13);
+            this.label3.Size = new System.Drawing.Size(102, 16);
             this.label3.TabIndex = 2;
             this.label3.Text = "Refresh period: ";
             // 
             // numericUpDownRefreshPeriod
             // 
-            this.numericUpDownRefreshPeriod.Location = new System.Drawing.Point(98, 89);
+            this.numericUpDownRefreshPeriod.Location = new System.Drawing.Point(131, 110);
+            this.numericUpDownRefreshPeriod.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.numericUpDownRefreshPeriod.Maximum = new decimal(new int[] {
             1440,
             0,
@@ -157,7 +160,7 @@
             0,
             0});
             this.numericUpDownRefreshPeriod.Name = "numericUpDownRefreshPeriod";
-            this.numericUpDownRefreshPeriod.Size = new System.Drawing.Size(65, 20);
+            this.numericUpDownRefreshPeriod.Size = new System.Drawing.Size(87, 22);
             this.numericUpDownRefreshPeriod.TabIndex = 1;
             this.numericUpDownRefreshPeriod.Value = new decimal(new int[] {
             5,
@@ -169,10 +172,10 @@
             // checkBoxStartup
             // 
             this.checkBoxStartup.AutoSize = true;
-            this.checkBoxStartup.Location = new System.Drawing.Point(17, 23);
-            this.checkBoxStartup.Margin = new System.Windows.Forms.Padding(2);
+            this.checkBoxStartup.Location = new System.Drawing.Point(23, 28);
+            this.checkBoxStartup.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.checkBoxStartup.Name = "checkBoxStartup";
-            this.checkBoxStartup.Size = new System.Drawing.Size(166, 17);
+            this.checkBoxStartup.Size = new System.Drawing.Size(202, 20);
             this.checkBoxStartup.TabIndex = 0;
             this.checkBoxStartup.Text = "Launch application on startup";
             this.checkBoxStartup.UseVisualStyleBackColor = true;
@@ -181,11 +184,11 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.label1);
-            this.groupBox2.Location = new System.Drawing.Point(25, 244);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
+            this.groupBox2.Location = new System.Drawing.Point(33, 300);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox2.Size = new System.Drawing.Size(421, 52);
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.groupBox2.Size = new System.Drawing.Size(561, 64);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "About";
@@ -193,21 +196,20 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(14, 26);
-            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label1.Location = new System.Drawing.Point(19, 32);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(147, 13);
+            this.label1.Size = new System.Drawing.Size(201, 16);
             this.label1.TabIndex = 0;
-            this.label1.Text = "By o0Zz (oozz01@gmail.com)";
+            this.label1.Text = "By o0Zz (https://github.com/o0zz)";
             // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.label2);
-            this.groupBox3.Location = new System.Drawing.Point(25, 150);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(2);
+            this.groupBox3.Location = new System.Drawing.Point(33, 185);
+            this.groupBox3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox3.Size = new System.Drawing.Size(421, 90);
+            this.groupBox3.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.groupBox3.Size = new System.Drawing.Size(561, 111);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Help";
@@ -215,22 +217,22 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(4, 26);
-            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label2.Location = new System.Drawing.Point(5, 32);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(388, 52);
+            this.label2.Size = new System.Drawing.Size(490, 64);
             this.label2.TabIndex = 1;
             this.label2.Text = resources.GetString("label2.Text");
             // 
             // Settings
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(479, 315);
+            this.ClientSize = new System.Drawing.Size(639, 388);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.MaximizeBox = false;
             this.Name = "Settings";
             this.Text = "BluetoothLE Battery Montior";
