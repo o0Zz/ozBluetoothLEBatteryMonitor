@@ -20,12 +20,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2
+
+      - name: Compute version from git
+        id: version
+        shell: pwsh
+        run: |
+          $describe = git describe --tags --long --match 'v*' 2>$null
+          if ($LASTEXITCODE -ne 0 -or -not $describe) {
+            $version = "0.0.0.0"
+          } elseif ($describe -match '^v(\d+\.\d+\.\d+)-(\d+)-g[0-9a-f]+$') {
+            $version = "{0}.{1}" -f $matches[1], $matches[2]
+          } else {
+            $version = "0.0.0.0"
+          }
+          Write-Host "Computed version: $version"
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Patch AssemblyVersion and AssemblyFileVersion
+        shell: pwsh
+        run: |
+          $file = "ozBluetoothLEBatteryMonitor/Properties/AssemblyInfo.cs"
+          $content = Get-Content $file
+          $content = $content -replace 'AssemblyVersion\("[^"]*"\)', 'AssemblyVersion("${{ steps.version.outputs.version }}")'
+          $content = $content -replace 'AssemblyFileVersion\("[^"]*"\)', 'AssemblyFileVersion("${{ steps.version.outputs.version }}")'
+          $content | Set-Content $file
 
       - name: Restore NuGet packages
         run: nuget restore $env:SOLUTION

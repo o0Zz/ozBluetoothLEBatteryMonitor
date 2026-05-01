@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 using Windows.UI.Xaml.Automation.Peers;
 
@@ -52,6 +53,10 @@ namespace BluetoothLEBatteryMonitor
             IconTimer.Start();
 
             UpdateIcon();
+
+                //Display the build version (CI patches AssemblyVersion via git describe)
+            string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            label1.Text = String.Format("v{0} - by o0Zz (https://github.com/o0zz)", version);
 
             isInitializing = false;
         }
