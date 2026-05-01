@@ -1,14 +1,16 @@
 # 🔋Oz's Bluetooth Battery Monitor
 
-![Banner Gif of Tray](https://i.imgur.com/r18xM3j.png)
+![Banner Gif of Tray](doc/img/bat_banner.png)
 
 ## Introduction
 The Bluetooth Battery Monitor adds a small and simple battery display to your system tray. These battery displays allow you to see the life of Bluetooth devices connected to your computer.
 
 **Notifications**   
 Whenever a device drops below 20%, a notification will play if activated.  
+
 **Auto Startup**  
 When activated, the application will start automatically at system startup.  
+
 **Adjustable Refresh Rate**  
 You can change how often the system looks for and updates the battery charge levels.
 
@@ -26,7 +28,7 @@ Follow the directions below to get started!
 *Start on startup is not activated by default. This must be switched on in the setting or it will need to be manually started every time.*
 
 ## ⚙️Settings and Configuration⚙️
-![Settings Banner Photo](https://i.imgur.com/HuXtQqF.jpeg)
+![Settings Banner Photo](doc/img/bat_set_banner.png)
 ### How to Access Settings
 When the application is powered up you will find a battery with a Bluetooth icon in the system tray. Right-click this and select *Settings*.
 
@@ -71,5 +73,3 @@ When the application is powered up you will find a battery with a Bluetooth icon
   - Exit out of all and manually restart application
     > If the application is opened more than once it can produce multiple icons as it is running multiple instances in the background. Right clicking adn exiting all of them and then manually starting the application again should fix this.
 
-### References
-- https://github.com/MUedsa/BluetoothLEBatteryMonitor/
