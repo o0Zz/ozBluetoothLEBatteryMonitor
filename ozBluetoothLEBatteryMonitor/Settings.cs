@@ -166,6 +166,18 @@ namespace BluetoothLEBatteryMonitor
 
                 NotifyLowBattery(kv.Key, name, level);
             }
+
+                //Drop icons for devices that disappeared from the manager
+            foreach (string id in new List<string>(deviceIcons.Keys))
+            {
+                if (deviceDict.ContainsKey(id))
+                    continue;
+
+                deviceIcons[id].Visible = false;
+                deviceIcons[id].Dispose();
+                deviceIcons.Remove(id);
+                deviceLowBatteryNotificationDone.Remove(id);
+            }
         }
 
         private void NotifyLowBattery(string id, string name, int level)
@@ -277,6 +289,11 @@ namespace BluetoothLEBatteryMonitor
         public void OnNewDevice(DeviceBLE aDevice)
         {
             //this.form.Notify("New device detected: " + aDevice.GetName() + " (Battery: " + aDevice.GetBatteryLevel() + "%)");
+            this.form.UpdateIcon();
+        }
+
+        public void OnDeviceRemoved(string deviceId)
+        {
             this.form.UpdateIcon();
         }
 

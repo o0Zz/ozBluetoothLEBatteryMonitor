@@ -14,6 +14,7 @@ namespace BluetoothLEBatteryMonitor.Service
     public interface IDeviceNotification
     {
         void OnNewDevice(DeviceBLE aDevice);
+        void OnDeviceRemoved(string deviceId);
     }
 
     /* --------------------------------------------------------------------- */
@@ -168,8 +169,23 @@ namespace BluetoothLEBatteryMonitor.Service
                     } 
                 }
             };
-            watcher.Updated += (_, __) => { };
-            watcher.EnumerationCompleted += (DeviceWatcher deviceWatcher, object arg) => { 
+            watcher.Updated += (DeviceWatcher deviceWatcher, DeviceInformationUpdate devUpdate) =>
+            {
+                    //An IsPaired flip to false won't fire Removed, only Updated. Re-check pairing.
+                object isPaired;
+                if (devUpdate.Properties != null
+                    && devUpdate.Properties.TryGetValue("System.Devices.Aep.IsPaired", out isPaired)
+                    && isPaired is bool
+                    && !(bool)isPaired)
+                {
+                    RemoveDevice(devUpdate.Id);
+                }
+            };
+            watcher.Removed += (DeviceWatcher deviceWatcher, DeviceInformationUpdate devUpdate) =>
+            {
+                RemoveDevice(devUpdate.Id);
+            };
+            watcher.EnumerationCompleted += (DeviceWatcher deviceWatcher, object arg) => {
                 deviceWatcher.Stop();
             };
             watcher.Stopped += (DeviceWatcher deviceWatcher, object arg) => {
@@ -183,6 +199,13 @@ namespace BluetoothLEBatteryMonitor.Service
                 watcher = null;
             };
             watcher.Start();
+        }
+
+        private void RemoveDevice(string id)
+        {
+            DeviceBLE removed;
+            if (deviceBLEDict.TryRemove(id, out removed))
+                this.deviceNotification.OnDeviceRemoved(id);
         }
 
         public void stopScan()
