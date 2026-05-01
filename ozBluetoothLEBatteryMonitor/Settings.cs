@@ -86,7 +86,7 @@ namespace BluetoothLEBatteryMonitor
 
         private static Icon GetIconForBatteryLevel(int level)
         {
-            if (level >= 90) return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_100;
+            if (level < 0 || level >= 90) return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_100;
             if (level >= 70) return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_80;
             if (level >= 50) return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_60;
             if (level >= 30) return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_40;
@@ -134,7 +134,10 @@ namespace BluetoothLEBatteryMonitor
 
                 if (theBalloonText.Length != 0)
                     theBalloonText += "\n";
-                theBalloonText += String.Format("{0}: {1}%", name, level);
+
+                theBalloonText += (level < 0)
+                    ? String.Format("{0}: ?", name)
+                    : String.Format("{0}: {1}%", name, level);
 
                 NotifyLowBattery(kv.Key, name, level);
             }
@@ -154,8 +157,8 @@ namespace BluetoothLEBatteryMonitor
                 int level = kv.Value.GetBatteryLevel();
                 string name = kv.Value.GetName();
 
-                if (level < 0)
-                    continue; //Skip devices with no successful read yet
+                if (level < 0 && checkBoxHideUnknownBattery.Checked)
+                    continue;
 
                 NotifyIcon icon;
                 if (!deviceIcons.TryGetValue(kv.Key, out icon))
@@ -168,7 +171,9 @@ namespace BluetoothLEBatteryMonitor
                 }
 
                 icon.Icon = GetIconForBatteryLevel(level);
-                string tooltip = String.Format("{0}: {1}%", name, level);
+                string tooltip = (level < 0)
+                    ? String.Format("{0}: ?", name)
+                    : String.Format("{0}: {1}%", name, level);
                 icon.Text = tooltip.Substring(0, Math.Min(tooltip.Length, 64));
 
                 NotifyLowBattery(kv.Key, name, level);
