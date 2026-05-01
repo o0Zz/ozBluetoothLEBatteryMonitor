@@ -1,7 +1,9 @@
-﻿using BluetoothLEBatteryMonitor.Service;
+using BluetoothLEBatteryMonitor.Service;
 using Microsoft.Win32;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 using Windows.UI.Xaml.Automation.Peers;
 
@@ -13,11 +15,15 @@ namespace BluetoothLEBatteryMonitor
         private Info infoForm = null;
         private bool UserClose = false;
         private bool UserShow = false;
-        private bool lowBatteryNotificationDone = false;
+        private Dictionary<string, NotifyIcon> deviceIcons = new Dictionary<string, NotifyIcon>();
+        private Dictionary<string, bool> deviceLowBatteryNotificationDone = new Dictionary<string, bool>();
 
         public Settings()
         {
             InitializeComponent();
+
+                //Force the form handle so worker-thread BeginInvoke can post to UI thread
+            IntPtr _ = this.Handle;
 
                 //First of all create entry for settings
             Registry.CurrentUser.CreateSubKey("SOFTWARE\\BluetoothLEBatteryMonitor");
@@ -32,6 +38,7 @@ namespace BluetoothLEBatteryMonitor
             numericUpDownRefreshPeriod.Value = (int)rk.GetValue("IntervalMin", 5);
             checkBoxNotification.Checked = ((int)rk.GetValue("NotificationEnabled", 1)) != 0;
             checkBoxScanForEver.Checked = ((int)rk.GetValue("AutomaticDetectionEnabled", 0)) != 0;
+            checkBoxOneIconPerDevice.Checked = ((int)rk.GetValue("OneIconPerDevice", 0)) != 0;
 
                 //Instantiate everything
             deviceManager = new DeviceManager(new DeviceNotification(this));
@@ -73,66 +80,116 @@ namespace BluetoothLEBatteryMonitor
             UpdateIcon();
         }
 
+        private static Icon GetIconForBatteryLevel(int level)
+        {
+            if (level >= 90) return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_100;
+            if (level >= 70) return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_80;
+            if (level >= 50) return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_60;
+            if (level >= 30) return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_40;
+            return BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_20;
+        }
+
         public void UpdateIcon()
         {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(UpdateIcon));
+                return;
+            }
+
             ConcurrentDictionary<string, DeviceBLE> deviceDict = deviceManager.getDeviceList();
 
                 //Request to update battery level
             foreach (DeviceBLE device in deviceDict.Values)
                 device.UpdateBatteryLevel();
 
+            if (checkBoxOneIconPerDevice.Checked && !deviceDict.IsEmpty)
+                UpdateIconPerDevice(deviceDict);
+            else
+                UpdateSingleIcon(deviceDict);
+        }
+
+        private void UpdateSingleIcon(ConcurrentDictionary<string, DeviceBLE> deviceDict)
+        {
+            ClearPerDeviceIcons();
+            NotifyIcon.Visible = true;
+
             int theLowestBattery = 100;
-            string theLowestBatteryName = "";
             string theBalloonText = "";
 
-            foreach (DeviceBLE device in deviceDict.Values)
+            foreach (var kv in deviceDict)
             {
-                int         theBatteryLevel = device.GetBatteryLevel();
-                string      theName = device.GetName();
+                int level = kv.Value.GetBatteryLevel();
+                string name = kv.Value.GetName();
 
-                if ((theBatteryLevel >= 0) && (theBatteryLevel < theLowestBattery))
-                {
-                    theLowestBattery = theBatteryLevel;
-                    theLowestBatteryName = theName;
-                }
+                if ((level >= 0) && (level < theLowestBattery))
+                    theLowestBattery = level;
 
-                theBalloonText += String.Format("{0}: {1}%\n", theName, theBatteryLevel);
-            }
+                if (theBalloonText.Length != 0)
+                    theBalloonText += "\n";
+                theBalloonText += String.Format("{0}: {1}%", name, level);
 
-            if (theLowestBattery >= 90)
-            {
-                NotifyIcon.Icon = BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_100;
-            }
-            else if (theLowestBattery >= 70)
-            {
-                NotifyIcon.Icon = BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_80;
-            }
-            else if (theLowestBattery >= 50)
-            {
-                NotifyIcon.Icon = BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_60;
-            }
-            else if (theLowestBattery >= 30)
-            {
-                NotifyIcon.Icon = BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_40;
-            }
-            else if(theLowestBattery > 0)
-            {
-                NotifyIcon.Icon = BluetoothLEBatteryMonitor.Properties.Resources.Icon_Battery_20;
+                NotifyLowBattery(kv.Key, name, level);
             }
 
-            if (theLowestBattery <= 20)
-            {
-                if (!lowBatteryNotificationDone)
-                    Notify(String.Format("Battery LOW on '{0}' ({1}%) !", theLowestBatteryName, theLowestBattery), ToolTipIcon.Warning);
-
-                lowBatteryNotificationDone = true;
-            }
-            else
-            {
-                lowBatteryNotificationDone = false;
-            }
+            if (theLowestBattery > 0)
+                NotifyIcon.Icon = GetIconForBatteryLevel(theLowestBattery);
 
             NotifyIcon.Text = theBalloonText.Substring(0, Math.Min(theBalloonText.Length, 64));
+        }
+
+        private void UpdateIconPerDevice(ConcurrentDictionary<string, DeviceBLE> deviceDict)
+        {
+            NotifyIcon.Visible = false;
+
+            foreach (var kv in deviceDict)
+            {
+                int level = kv.Value.GetBatteryLevel();
+                string name = kv.Value.GetName();
+
+                if (level < 0)
+                    continue; //Skip devices with no successful read yet
+
+                NotifyIcon icon;
+                if (!deviceIcons.TryGetValue(kv.Key, out icon))
+                {
+                    icon = new NotifyIcon(this.components);
+                    icon.ContextMenuStrip = this.contextMenuStrip;
+                    icon.MouseDoubleClick += this.NotifyIcon_MouseDoubleClick;
+                    icon.Visible = true;
+                    deviceIcons[kv.Key] = icon;
+                }
+
+                icon.Icon = GetIconForBatteryLevel(level);
+                string tooltip = String.Format("{0}: {1}%", name, level);
+                icon.Text = tooltip.Substring(0, Math.Min(tooltip.Length, 64));
+
+                NotifyLowBattery(kv.Key, name, level);
+            }
+        }
+
+        private void NotifyLowBattery(string id, string name, int level)
+        {
+            if (level < 0)
+                return;
+
+            bool wasLow;
+            deviceLowBatteryNotificationDone.TryGetValue(id, out wasLow);
+
+            if (level <= 20 && !wasLow)
+                Notify(String.Format("Battery LOW on '{0}' ({1}%) !", name, level), ToolTipIcon.Warning);
+
+            deviceLowBatteryNotificationDone[id] = (level <= 20);
+        }
+
+        private void ClearPerDeviceIcons()
+        {
+            foreach (NotifyIcon icon in deviceIcons.Values)
+            {
+                icon.Visible = false;
+                icon.Dispose();
+            }
+            deviceIcons.Clear();
         }
 
 
@@ -147,6 +204,9 @@ namespace BluetoothLEBatteryMonitor
             infoForm.Close();
 
             deviceManager.stopScan();
+
+            ClearPerDeviceIcons();
+            NotifyIcon.Visible = false;
 
                 //Because of an issue, we have to show the setting form before closing it
             UserShow = true;
@@ -195,6 +255,12 @@ namespace BluetoothLEBatteryMonitor
         {
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\BluetoothLEBatteryMonitor", true);
             rk.SetValue("NotificationEnabled", checkBoxNotification.Checked ? 1 : 0);
+        }
+
+        private void checkBoxOneIconPerDevice_CheckedChanged(object sender, EventArgs e)
+        {
+            RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\BluetoothLEBatteryMonitor", true);
+            rk.SetValue("OneIconPerDevice", checkBoxOneIconPerDevice.Checked ? 1 : 0);
         }
     }
 
