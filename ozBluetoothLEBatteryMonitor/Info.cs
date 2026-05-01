@@ -1,14 +1,7 @@
 ﻿using BluetoothLEBatteryMonitor.Service;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
-using Windows.Foundation;
 
 namespace BluetoothLEBatteryMonitor
 {
@@ -77,11 +70,6 @@ namespace BluetoothLEBatteryMonitor
             listView1.EndUpdate();
 
             toolStripStatusLabel2.Text = lastUpdated.ToString();
-        }
-
-        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }

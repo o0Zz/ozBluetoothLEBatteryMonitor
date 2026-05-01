@@ -15,6 +15,7 @@ namespace BluetoothLEBatteryMonitor
         private Info infoForm = null;
         private bool UserClose = false;
         private bool UserShow = false;
+        private bool isInitializing = true;
         private Dictionary<string, NotifyIcon> deviceIcons = new Dictionary<string, NotifyIcon>();
         private Dictionary<string, bool> deviceLowBatteryNotificationDone = new Dictionary<string, bool>();
 
@@ -51,6 +52,8 @@ namespace BluetoothLEBatteryMonitor
             IconTimer.Start();
 
             UpdateIcon();
+
+            isInitializing = false;
         }
 
         protected override void SetVisibleCore(bool value)
@@ -245,6 +248,8 @@ namespace BluetoothLEBatteryMonitor
 
         private void numericUpDownRefreshPeriod_ValueChanged(object sender, EventArgs e)
         {
+            if (isInitializing) return;
+
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\BluetoothLEBatteryMonitor", true);
             rk.SetValue("IntervalMin", numericUpDownRefreshPeriod.Value, RegistryValueKind.DWord);
 
@@ -254,6 +259,8 @@ namespace BluetoothLEBatteryMonitor
         }
         private void checkBoxStartup_CheckedChanged(object sender, EventArgs e)
         {
+            if (isInitializing) return;
+
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
             if (checkBoxStartup.Checked)
                 rk.SetValue("BluetoothLEBatteryMonitor", Application.ExecutablePath);
@@ -263,26 +270,40 @@ namespace BluetoothLEBatteryMonitor
 
         private void checkBoxScanForEver_CheckedChanged(object sender, EventArgs e)
         {
+            if (isInitializing) return;
+
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\BluetoothLEBatteryMonitor", true);
             rk.SetValue("AutomaticDetectionEnabled", checkBoxScanForEver.Checked ? 1 : 0);
+
+                //Restart the watchers so the new flag takes effect immediately
+            deviceManager.stopScan();
+            deviceManager.scan(checkBoxScanForEver.Checked);
         }
 
         private void checkBoxNotification_CheckedChanged(object sender, EventArgs e)
         {
+            if (isInitializing) return;
+
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\BluetoothLEBatteryMonitor", true);
             rk.SetValue("NotificationEnabled", checkBoxNotification.Checked ? 1 : 0);
         }
 
         private void checkBoxOneIconPerDevice_CheckedChanged(object sender, EventArgs e)
         {
+            if (isInitializing) return;
+
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\BluetoothLEBatteryMonitor", true);
             rk.SetValue("OneIconPerDevice", checkBoxOneIconPerDevice.Checked ? 1 : 0);
+            UpdateIcon();
         }
 
         private void checkBoxHideUnknownBattery_CheckedChanged(object sender, EventArgs e)
         {
+            if (isInitializing) return;
+
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\BluetoothLEBatteryMonitor", true);
             rk.SetValue("HideUnknownBattery", checkBoxHideUnknownBattery.Checked ? 1 : 0);
+            UpdateIcon();
         }
     }
 

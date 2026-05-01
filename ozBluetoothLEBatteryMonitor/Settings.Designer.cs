@@ -125,7 +125,7 @@
             this.checkBoxOneIconPerDevice.Name = "checkBoxOneIconPerDevice";
             this.checkBoxOneIconPerDevice.Size = new System.Drawing.Size(237, 17);
             this.checkBoxOneIconPerDevice.TabIndex = 6;
-            this.checkBoxOneIconPerDevice.Text = "Show one tray icon per device (Need restart)";
+            this.checkBoxOneIconPerDevice.Text = "Show one tray icon per device";
             this.checkBoxOneIconPerDevice.UseVisualStyleBackColor = true;
             this.checkBoxOneIconPerDevice.CheckedChanged += new System.EventHandler(this.checkBoxOneIconPerDevice_CheckedChanged);
             // 
