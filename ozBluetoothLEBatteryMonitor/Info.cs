@@ -15,11 +15,13 @@ namespace BluetoothLEBatteryMonitor
     public partial class Info : Form
     {
         private DeviceManager deviceManager;
+        private Func<bool> hideUnknownBattery;
 
-        public Info(DeviceManager deviceManager)
+        public Info(DeviceManager deviceManager, Func<bool> hideUnknownBattery)
         {
             InitializeComponent();
             this.deviceManager = deviceManager;
+            this.hideUnknownBattery = hideUnknownBattery;
 
             listView1.Columns.Add("Device", listView1.Width - 205);
             listView1.Columns.Add("State", 100);
@@ -57,6 +59,9 @@ namespace BluetoothLEBatteryMonitor
                 int theBatteryLevel = device.GetBatteryLevel();
                 string theName = device.GetName();
                 lastUpdated = device.GetLastUpdatedTime();
+
+                if (theBatteryLevel < 0 && hideUnknownBattery != null && hideUnknownBattery())
+                    continue;
 
                 ListViewItem listViewItem = new ListViewItem
                 {

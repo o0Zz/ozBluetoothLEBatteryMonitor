@@ -25,6 +25,7 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.IconTimer = new System.Windows.Forms.Timer(this.components);
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkBoxHideUnknownBattery = new System.Windows.Forms.CheckBox();
             this.checkBoxOneIconPerDevice = new System.Windows.Forms.CheckBox();
             this.checkBoxScanForEver = new System.Windows.Forms.CheckBox();
             this.checkBoxNotification = new System.Windows.Forms.CheckBox();
@@ -87,6 +88,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.checkBoxHideUnknownBattery);
             this.groupBox1.Controls.Add(this.checkBoxOneIconPerDevice);
             this.groupBox1.Controls.Add(this.checkBoxScanForEver);
             this.groupBox1.Controls.Add(this.checkBoxNotification);
@@ -98,13 +100,25 @@
             this.groupBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.groupBox1.Size = new System.Drawing.Size(423, 146);
+            this.groupBox1.Size = new System.Drawing.Size(423, 167);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Settings";
-            // 
+            //
+            // checkBoxHideUnknownBattery
+            //
+            this.checkBoxHideUnknownBattery.AutoSize = true;
+            this.checkBoxHideUnknownBattery.Location = new System.Drawing.Point(17, 141);
+            this.checkBoxHideUnknownBattery.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.checkBoxHideUnknownBattery.Name = "checkBoxHideUnknownBattery";
+            this.checkBoxHideUnknownBattery.Size = new System.Drawing.Size(245, 17);
+            this.checkBoxHideUnknownBattery.TabIndex = 7;
+            this.checkBoxHideUnknownBattery.Text = "Hide devices with unknown battery level";
+            this.checkBoxHideUnknownBattery.UseVisualStyleBackColor = true;
+            this.checkBoxHideUnknownBattery.CheckedChanged += new System.EventHandler(this.checkBoxHideUnknownBattery_CheckedChanged);
+            //
             // checkBoxOneIconPerDevice
-            // 
+            //
             this.checkBoxOneIconPerDevice.AutoSize = true;
             this.checkBoxOneIconPerDevice.Location = new System.Drawing.Point(17, 118);
             this.checkBoxOneIconPerDevice.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
@@ -195,7 +209,7 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.label1);
-            this.groupBox2.Location = new System.Drawing.Point(25, 268);
+            this.groupBox2.Location = new System.Drawing.Point(25, 289);
             this.groupBox2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
@@ -217,7 +231,7 @@
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.label2);
-            this.groupBox3.Location = new System.Drawing.Point(25, 175);
+            this.groupBox3.Location = new System.Drawing.Point(25, 196);
             this.groupBox3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
@@ -240,7 +254,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(479, 340);
+            this.ClientSize = new System.Drawing.Size(479, 361);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -281,6 +295,7 @@
         private System.Windows.Forms.CheckBox checkBoxNotification;
         private System.Windows.Forms.CheckBox checkBoxScanForEver;
         private System.Windows.Forms.CheckBox checkBoxOneIconPerDevice;
+        private System.Windows.Forms.CheckBox checkBoxHideUnknownBattery;
     }
 }
 
