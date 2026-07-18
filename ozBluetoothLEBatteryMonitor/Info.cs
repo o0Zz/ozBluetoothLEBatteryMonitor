@@ -45,9 +45,9 @@ namespace BluetoothLEBatteryMonitor
             listView1.BeginUpdate();
             listView1.Items.Clear();
 
-            ConcurrentDictionary<string, DeviceBLE> deviceDict = deviceManager.getDeviceList();
+            ConcurrentDictionary<string, BatteryDevice> deviceDict = deviceManager.getDeviceList();
 
-            foreach (DeviceBLE device in deviceDict.Values)
+            foreach (BatteryDevice device in deviceDict.Values)
             {
                 int theBatteryLevel = device.GetBatteryLevel();
                 string theName = device.GetName();

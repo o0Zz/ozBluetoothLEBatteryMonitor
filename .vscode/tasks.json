@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // Restores NuGet packages into ../packages (only needed on a fresh clone).
+      "label": "nuget restore",
+      "type": "process",
+      "command": "C:\\tools\\nuget.exe",
+      "args": [
+        "restore",
+        "${workspaceFolder}\\ozBluetoothLEBatteryMonitor.sln"
+      ],
+      "problemMatcher": []
+    },
+    {
+      // Builds the Debug configuration with Visual Studio MSBuild (the legacy
+      // ToolsVersion=15 csproj can't be built with `dotnet build`).
+      "label": "build (Debug)",
+      "type": "process",
+      "command": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe",
+      "args": [
+        "${workspaceFolder}\\ozBluetoothLEBatteryMonitor.sln",
+        "/p:Configuration=Debug",
+        "/v:minimal",
+        "/nologo"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

@@ -106,10 +106,10 @@ namespace BluetoothLEBatteryMonitor
                 return;
             }
 
-            ConcurrentDictionary<string, DeviceBLE> deviceDict = deviceManager.getDeviceList();
+            ConcurrentDictionary<string, BatteryDevice> deviceDict = deviceManager.getDeviceList();
 
                 //Request to update battery level
-            foreach (DeviceBLE device in deviceDict.Values)
+            foreach (BatteryDevice device in deviceDict.Values)
                 device.UpdateBatteryLevel();
 
             if (checkBoxOneIconPerDevice.Checked && !deviceDict.IsEmpty)
@@ -118,7 +118,7 @@ namespace BluetoothLEBatteryMonitor
                 UpdateSingleIcon(deviceDict);
         }
 
-        private void UpdateSingleIcon(ConcurrentDictionary<string, DeviceBLE> deviceDict)
+        private void UpdateSingleIcon(ConcurrentDictionary<string, BatteryDevice> deviceDict)
         {
             ClearPerDeviceIcons();
             NotifyIcon.Visible = true;
@@ -153,7 +153,7 @@ namespace BluetoothLEBatteryMonitor
             NotifyIcon.Text = theBalloonText.Substring(0, Math.Min(theBalloonText.Length, 64));
         }
 
-        private void UpdateIconPerDevice(ConcurrentDictionary<string, DeviceBLE> deviceDict)
+        private void UpdateIconPerDevice(ConcurrentDictionary<string, BatteryDevice> deviceDict)
         {
             NotifyIcon.Visible = false;
 
@@ -327,7 +327,7 @@ namespace BluetoothLEBatteryMonitor
             this.form = form;
         }
 
-        public void OnNewDevice(DeviceBLE aDevice)
+        public void OnNewDevice(BatteryDevice aDevice)
         {
             //this.form.Notify("New device detected: " + aDevice.GetName() + " (Battery: " + aDevice.GetBatteryLevel() + "%)");
             this.form.UpdateIcon();
