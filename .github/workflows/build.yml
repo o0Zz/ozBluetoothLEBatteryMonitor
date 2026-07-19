@@ -2,6 +2,8 @@ name: Build and Release
 
 on:
   push:
+    branches:
+      - master
     tags:
       - 'v*'
   workflow_dispatch:
@@ -33,12 +35,18 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          $describe = git describe --tags --long --match 'v*' 2>$null
-          if ($LASTEXITCODE -ne 0 -or -not $describe) {
-            $version = "0.0.0.0"
-          } elseif ($describe -match '^v(\d+\.\d+\.\d+)-(\d+)-g[0-9a-f]+$') {
-            $version = "{0}.{1}" -f $matches[1], $matches[2]
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            # Tag builds carry a real version derived from the tag.
+            $describe = git describe --tags --long --match 'v*' 2>$null
+            if ($LASTEXITCODE -ne 0 -or -not $describe) {
+              $version = "0.0.0.0"
+            } elseif ($describe -match '^v(\d+\.\d+\.\d+)-(\d+)-g[0-9a-f]+$') {
+              $version = "{0}.{1}" -f $matches[1], $matches[2]
+            } else {
+              $version = "0.0.0.0"
+            }
           } else {
+            # master / manual builds are unreleased -> pin to 0.0.0.0.
             $version = "0.0.0.0"
           }
           Write-Host "Computed version: $version"
@@ -59,10 +67,19 @@ jobs:
       - name: Build
         run: msbuild $env:SOLUTION /p:Configuration=$env:CONFIGURATION /p:Platform="Any CPU" /m
 
+      - name: Upload build artifact
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: BluetoothLEBatteryMonitor-${{ steps.version.outputs.version }}
+          path: ozBluetoothLEBatteryMonitor/bin/Release/*
+
       - name: Package release zip
+        if: github.ref_type == 'tag'
         run: Compress-Archive -Path ozBluetoothLEBatteryMonitor/bin/Release/* -DestinationPath BluetoothLEBatteryMonitor-${{ github.ref_name }}.zip
 
       - name: Draft GitHub Release
+        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           draft: true
