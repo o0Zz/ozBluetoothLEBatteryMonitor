@@ -8,7 +8,7 @@
       "command": "C:\\tools\\nuget.exe",
       "args": [
         "restore",
-        "${workspaceFolder}\\ozBluetoothLEBatteryMonitor.sln"
+        "${workspaceFolder}\\PeripheralBatteryMonitor.sln"
       ],
       "problemMatcher": []
     },
@@ -28,7 +28,7 @@
       "args": [
         "-NoProfile",
         "-Command",
-        "& (& 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe' -latest -prerelease -find 'MSBuild\\**\\Bin\\MSBuild.exe' | Select-Object -First 1) '${workspaceFolder}\\ozBluetoothLEBatteryMonitor.sln' /p:Configuration=Debug /v:minimal /nologo; exit $LASTEXITCODE"
+        "& (& 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe' -latest -prerelease -find 'MSBuild\\**\\Bin\\MSBuild.exe' | Select-Object -First 1) '${workspaceFolder}\\PeripheralBatteryMonitor.sln' /p:Configuration=Debug /v:minimal /nologo; exit $LASTEXITCODE"
       ],
       "group": {
         "kind": "build",

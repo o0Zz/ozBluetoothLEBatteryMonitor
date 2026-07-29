@@ -5,13 +5,13 @@
       // .NET Framework debugging via vsdbg (C# extension / C# Dev Kit). Uses the
       // "coreclr" engine, which also debugs .NET Framework -- but only 64-bit
       // processes, so the Debug build is forced to x64 in the .csproj.
-      "name": "Debug BluetoothLEBatteryMonitor (.NET Framework)",
+      "name": "Debug PeripheralBatteryMonitor (.NET Framework)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build (Debug)",
-      "program": "${workspaceFolder}\\ozBluetoothLEBatteryMonitor\\bin\\Debug\\BluetoothLEBatteryMonitor.exe",
+      "program": "${workspaceFolder}\\PeripheralBatteryMonitor\\bin\\Debug\\PeripheralBatteryMonitor.exe",
       "args": [],
-      "cwd": "${workspaceFolder}\\ozBluetoothLEBatteryMonitor\\bin\\Debug",
+      "cwd": "${workspaceFolder}\\PeripheralBatteryMonitor\\bin\\Debug",
       "console": "internalConsole",
       "stopAtEntry": false
     }

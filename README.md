@@ -1,13 +1,15 @@
-# 🔋Oz's Bluetooth Battery Monitor
+# 🔋Peripheral Battery Monitor
 
 ![Banner Gif of Tray](doc/img/bat_banner.png)
 
 ## Introduction
-Bluetooth Battery Monitor adds a small and simple battery display to your system tray, so you can see the remaining life of Bluetooth devices connected to your PC at a glance.
+Peripheral Battery Monitor adds a small and simple battery display to your system tray, so you can see the remaining life of any wireless devices connected to your PC at a glance.
 
-It supports **Bluetooth Low Energy (BLE)** devices (earbuds, fitness bands, modern headsets, BLE mice/keyboards), **Bluetooth Classic (BR/EDR)** devices (older headsets, gaming headsets, AirPods on Windows), and devices that are not Bluetooth at all but come with **their own USB dongle** (Logitech LIGHTSPEED, e.g. the PRO X Wireless headset) — for which Windows reports no battery of its own.
-
-Battery level is read from whichever source a device actually supports: the standard BLE GATT Battery Service, the battery level Windows publishes for a paired Bluetooth device, the vendor HID report used by Apple Magic mice/trackpads/keyboards, or Logitech's HID++ protocol over the dongle.
+It supports :
+  - **Bluetooth Low Energy (BLE)** devices (earbuds, fitness bands, modern headsets, BLE mice/keyboards)
+  - **Bluetooth Classic (BR/EDR)** devices (older headsets, gaming headsets, AirPods on Windows)
+  - **Apple magic mice/trackpads/keyboards** devices
+  - **Logitech LIGHTSPEED** devices (PRO X Wireless headset, ...).
 
 **Notifications**
 Whenever a device drops below 20% a balloon notification fires (once per device, per low-battery transition).
@@ -27,9 +29,9 @@ Optionally hide devices whose battery cannot be read from the tray, balloon tool
 ## Quick Start Guide
 Follow the directions below to get started!
 
-**Step 1.** Download `BluetoothLEBatteryMonitor.exe` from the [latest release](https://github.com/o0Zz/ozBluetoothLEBatteryMonitor/releases).
+**Step 1.** Download `PeripheralBatteryMonitor.exe` from the [latest release](https://github.com/o0Zz/PeripheralBatteryMonitor/releases).
 
-**Step 2.** Double-click `BluetoothLEBatteryMonitor.exe` to start it.
+**Step 2.** Double-click `PeripheralBatteryMonitor.exe` to start it.
 
 **Step 3.** Open the system tray overflow popup and locate the battery icon. Drag it to the visible tray area if you want it always shown.
 
@@ -99,8 +101,8 @@ When the application is running, right-click the battery icon in the system tray
 Requires Visual Studio 2017+ Build Tools (MSBuild) and `nuget.exe`. The solution targets .NET Framework 4.8 in the legacy csproj format, so `dotnet build` will not work.
 
 ```sh
-nuget restore ozBluetoothLEBatteryMonitor.sln
-msbuild ozBluetoothLEBatteryMonitor.sln /p:Configuration=Release
+nuget restore PeripheralBatteryMonitor.sln
+msbuild PeripheralBatteryMonitor.sln /p:Configuration=Release
 ```
 
-The built executable is in `ozBluetoothLEBatteryMonitor/bin/Release/BluetoothLEBatteryMonitor.exe`.
+The built executable is in `PeripheralBatteryMonitor/bin/Release/PeripheralBatteryMonitor.exe`.

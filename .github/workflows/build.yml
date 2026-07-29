@@ -16,7 +16,7 @@ jobs:
     runs-on: windows-latest
 
     env:
-      SOLUTION: ozBluetoothLEBatteryMonitor.sln
+      SOLUTION: PeripheralBatteryMonitor.sln
       CONFIGURATION: Release
 
     steps:
@@ -55,7 +55,7 @@ jobs:
       - name: Patch AssemblyVersion and AssemblyFileVersion
         shell: pwsh
         run: |
-          $file = "ozBluetoothLEBatteryMonitor/Properties/AssemblyInfo.cs"
+          $file = "PeripheralBatteryMonitor/Properties/AssemblyInfo.cs"
           $content = Get-Content $file
           $content = $content -replace 'AssemblyVersion\("[^"]*"\)', 'AssemblyVersion("${{ steps.version.outputs.version }}")'
           $content = $content -replace 'AssemblyFileVersion\("[^"]*"\)', 'AssemblyFileVersion("${{ steps.version.outputs.version }}")'
@@ -71,12 +71,12 @@ jobs:
         if: github.ref_type != 'tag'
         uses: actions/upload-artifact@v4
         with:
-          name: BluetoothLEBatteryMonitor-${{ steps.version.outputs.version }}
-          path: ozBluetoothLEBatteryMonitor/bin/Release/*
+          name: PeripheralBatteryMonitor-${{ steps.version.outputs.version }}
+          path: PeripheralBatteryMonitor/bin/Release/*
 
       - name: Package release zip
         if: github.ref_type == 'tag'
-        run: Compress-Archive -Path ozBluetoothLEBatteryMonitor/bin/Release/* -DestinationPath BluetoothLEBatteryMonitor-${{ github.ref_name }}.zip
+        run: Compress-Archive -Path PeripheralBatteryMonitor/bin/Release/* -DestinationPath PeripheralBatteryMonitor-${{ github.ref_name }}.zip
 
       - name: Draft GitHub Release
         if: github.ref_type == 'tag'
@@ -86,5 +86,5 @@ jobs:
           name: ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           files: |
-            BluetoothLEBatteryMonitor-${{ github.ref_name }}.zip
-            ozBluetoothLEBatteryMonitor/bin/Release/BluetoothLEBatteryMonitor.exe
+            PeripheralBatteryMonitor-${{ github.ref_name }}.zip
+            PeripheralBatteryMonitor/bin/Release/PeripheralBatteryMonitor.exe
