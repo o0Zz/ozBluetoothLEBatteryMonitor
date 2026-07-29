@@ -24,6 +24,10 @@ namespace BluetoothLEBatteryMonitor.Service
         private int                 batteryLevel = -1;
         private DeviceTransport     transport = DeviceTransport.BluetoothLowEnergy;
         private DateTime            lastUpdatedTime;
+            //Did the most recent poll actually get a value out of the device? For transports
+            //with no OS-level connection state to consult (USB HID), answering the device
+            //*is* the liveness test.
+        private bool                lastReadSucceeded = false;
         private ConcurrentDictionary<string, object> propertyCache = new ConcurrentDictionary<string, object>();
 
             //Candidate providers for this device, in priority order. One list per device so a
@@ -39,6 +43,22 @@ namespace BluetoothLEBatteryMonitor.Service
             this.deviceName = deviceInfo.Name;
             this.transport = transport;
             CacheProperties(deviceInfo.Properties);
+            UpdateBatteryLevel();
+        }
+
+        /// <summary>
+        /// For devices that reach the PC outside Bluetooth and so have no
+        /// <see cref="DeviceInformation"/> behind them (a peripheral on its own USB dongle,
+        /// found by <see cref="HidDeviceSource"/>). The property bag is seeded by the caller
+        /// with whatever the bound provider needs to reach the device again.
+        /// </summary>
+        public BatteryDevice(string deviceId, string deviceName, DeviceTransport transport, IReadOnlyDictionary<string, object> properties)
+        {
+            this.deviceID = deviceId;
+            this.deviceName = deviceName;
+            this.transport = transport;
+            if (properties != null)
+                CacheProperties(properties);
             UpdateBatteryLevel();
         }
 
@@ -69,6 +89,7 @@ namespace BluetoothLEBatteryMonitor.Service
                 if (level.HasValue)
                 {
                     batteryLevel = level.Value;
+                    lastReadSucceeded = true;
                     return;
                 }
             }
@@ -88,17 +109,25 @@ namespace BluetoothLEBatteryMonitor.Service
                 {
                     batteryLevel = level.Value;
                     boundProvider = provider;
+                    lastReadSucceeded = true;
                     Debug.WriteLine("[Battery] '" + deviceName + "' <- " + provider.GetType().Name + " = " + level.Value + "%");
                     return;
                 }
             }
 
                 //Nothing produced a value this tick -> keep the last known level (-1 = never read).
+            lastReadSucceeded = false;
             Debug.WriteLine("[Battery] '" + deviceName + "' <- no provider produced a value (transport=" + transport + ", level=" + batteryLevel + ")");
         }
 
         public bool IsConnected()
         {
+                //USB HID: no OS connection state exists for the device behind the dongle, so
+                //"did it answer the last poll" is the only meaningful answer. The dongle can
+                //stay plugged in with the headset switched off.
+            if (transport == DeviceTransport.UsbHid)
+                return lastReadSucceeded;
+
             if (transport == DeviceTransport.BluetoothClassic)
             {
                 object aepConnected;
@@ -125,6 +154,11 @@ namespace BluetoothLEBatteryMonitor.Service
         public string GetName()
         {
             return deviceName;
+        }
+
+        public DeviceTransport GetTransport()
+        {
+            return transport;
         }
 
         public DateTime GetLastUpdatedTime()

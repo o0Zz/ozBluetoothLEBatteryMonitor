@@ -8,5 +8,6 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Core
     {
         BluetoothLowEnergy,  //Bluetooth LE / BLE
         BluetoothClassic,   //Bluetooth Classic / BR-EDR
+        UsbHid,             //Raw USB HID, e.g. a device on its own vendor dongle (no Bluetooth at all)
     }
 }

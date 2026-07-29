@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BluetoothLEBatteryMonitor.Service.Battery.Core;
+using BluetoothLEBatteryMonitor.Service.Battery.Providers.Logitech;
 
 namespace BluetoothLEBatteryMonitor.Service.Battery.Providers
 {
@@ -21,7 +22,8 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Providers
             Register(() => new GattBatteryProvider());            //1. GATT 0x180F (BLE only)
             Register(() => new DevicePropertyBatteryProvider());  //2. DEVPKEY_Device_BatteryLevel
             Register(() => new AppleBatteryProvider());           //3. Apple Magic HID report 0x90
-            Register(() => new CoarseBatteryProvider());          //4. System.Devices.BatteryLife
+            Register(() => new LogitechBatteryProvider());        //4. Logitech HID++ 0x1F20 (USB HID only)
+            Register(() => new CoarseBatteryProvider());          //5. System.Devices.BatteryLife
         }
 
         /// <summary>Append a provider factory. Later registrations have lower priority.</summary>

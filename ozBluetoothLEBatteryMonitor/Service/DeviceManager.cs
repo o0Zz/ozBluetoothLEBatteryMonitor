@@ -3,14 +3,21 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Windows.Devices.Enumeration;
 using BluetoothLEBatteryMonitor.Service.Battery.Core;
+using BluetoothLEBatteryMonitor.Service.Battery.Hid;
 
 namespace BluetoothLEBatteryMonitor.Service
 {
     /// <summary>
-    /// Bluetooth discovery layer. Runs two <see cref="DeviceWatcher"/> instances in
+    /// Discovery layer. Runs two <see cref="DeviceWatcher"/> instances in
     /// parallel -- one for BLE, one for Bluetooth Classic / BR-EDR -- and maintains the
     /// live set of paired <see cref="BatteryDevice"/>, notifying the UI via
     /// <see cref="IDeviceNotification"/>.
+    ///
+    /// Not every battery-powered device is a Bluetooth one: a peripheral on its own vendor
+    /// dongle has no association endpoint and no pairing, so the watchers never see it.
+    /// Those come from <see cref="HidDeviceSource"/> through <see cref="refreshHidDevices"/>,
+    /// which feeds the same dictionary. Both sources are otherwise indistinguishable to the
+    /// UI -- a device is a device.
     /// </summary>
     public class DeviceManager
     {
@@ -51,6 +58,54 @@ namespace BluetoothLEBatteryMonitor.Service
 
             foreach (DeviceWatcher w in watchers)
                 w.Start();
+
+                //No HID enumeration here on purpose: refreshHidDevices reports new devices
+                //synchronously, and the UI answers OnNewDevice by running a poll pass -- which
+                //would re-enter this method mid-scan. The poll tick is the single driver.
+        }
+
+        /// <summary>
+        /// Re-snapshot the non-Bluetooth (USB HID) devices and reconcile them into the device
+        /// list: newly plugged ones are added, vanished ones removed. There is no watcher to
+        /// subscribe to for these, so the caller drives this from the poll tick -- cheap
+        /// enough to do every time, and that is what makes unplugging the dongle show up.
+        ///
+        /// Only touches <see cref="DeviceTransport.UsbHid"/> entries; the Bluetooth ones are
+        /// owned by the watchers.
+        /// </summary>
+        public void refreshHidDevices()
+        {
+            if (!running)
+                return;
+
+            HashSet<string> presentIds = new HashSet<string>();
+
+            foreach (HidInterfaceInfo info in HidDeviceSource.Discover())
+            {
+                string id = HidDeviceSource.GetDeviceId(info);
+                presentIds.Add(id);
+
+                if (deviceDict.ContainsKey(id))
+                    continue;
+
+                BatteryDevice device = new BatteryDevice(id,
+                    HidDeviceSource.GetDeviceName(info),
+                    DeviceTransport.UsbHid,
+                    HidDeviceSource.GetProperties(info));
+
+                if (deviceDict.TryAdd(id, device))
+                    this.deviceNotification.OnNewDevice(device);
+            }
+
+            foreach (KeyValuePair<string, BatteryDevice> kv in deviceDict)
+            {
+                if (kv.Value.GetTransport() != DeviceTransport.UsbHid)
+                    continue;
+                if (presentIds.Contains(kv.Key))
+                    continue;
+
+                RemoveDevice(kv.Key);
+            }
         }
 
         private DeviceWatcher CreateWatcher(string protocolGuid, DeviceTransport transport)

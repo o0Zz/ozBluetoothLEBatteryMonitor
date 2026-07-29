@@ -1,0 +1,176 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Win32.SafeHandles;
+
+namespace BluetoothLEBatteryMonitor.Service.Battery.Hid
+{
+    /// <summary>
+    /// Lists the HID interfaces currently present on the machine.
+    ///
+    /// Interfaces are opened with a desired access of <b>0</b> (query-only). That is the
+    /// documented way to read a HID device's attributes and report descriptor without
+    /// asking for I/O rights: Windows opens keyboards and mice exclusively, so asking for
+    /// GENERIC_READ|GENERIC_WRITE here would fail on those and can disturb devices we have
+    /// no interest in. Actual I/O happens later, per device, through <see cref="HidDevice"/>.
+    /// </summary>
+    public static class HidInterfaceEnumerator
+    {
+        /// <summary>
+        /// Enumerate present HID interfaces belonging to one of <paramref name="vendorIds"/>.
+        /// Pass an empty/null list to consider every device (slower -- every HID interface on
+        /// the machine gets opened).
+        /// </summary>
+        public static List<HidInterfaceInfo> Enumerate(ICollection<ushort> vendorIds)
+        {
+            List<HidInterfaceInfo> result = new List<HidInterfaceInfo>();
+
+                //Cheap pre-filter on the device path so unrelated HID devices are never opened.
+                //USB paths spell the vendor as "vid_046d", Bluetooth ones as "vid&0002004c",
+                //so match on the bare hex digits which both forms contain.
+            List<string> pathHints = new List<string>();
+            if (vendorIds != null)
+            {
+                foreach (ushort vid in vendorIds)
+                    pathHints.Add(vid.ToString("x4", CultureInfo.InvariantCulture));
+            }
+
+            Guid hidGuid;
+            HidNative.HidD_GetHidGuid(out hidGuid);
+
+            IntPtr deviceInfoSet = HidNative.SetupDiGetClassDevs(ref hidGuid, IntPtr.Zero, IntPtr.Zero,
+                HidNative.DIGCF_PRESENT | HidNative.DIGCF_DEVICEINTERFACE);
+            if (deviceInfoSet == HidNative.INVALID_HANDLE_VALUE)
+                return result;
+
+            try
+            {
+                HidNative.SP_DEVICE_INTERFACE_DATA interfaceData = new HidNative.SP_DEVICE_INTERFACE_DATA();
+                interfaceData.cbSize = Marshal.SizeOf(typeof(HidNative.SP_DEVICE_INTERFACE_DATA));
+
+                for (uint index = 0;
+                     HidNative.SetupDiEnumDeviceInterfaces(deviceInfoSet, IntPtr.Zero, ref hidGuid, index, ref interfaceData);
+                     index++)
+                {
+                    string path = GetDevicePath(deviceInfoSet, ref interfaceData);
+                    if (path == null)
+                        continue;
+
+                    if (pathHints.Count > 0 && !MatchesAnyHint(path, pathHints))
+                        continue;
+
+                    HidInterfaceInfo info = Describe(path);
+                    if (info == null)
+                        continue;
+
+                    if (vendorIds != null && vendorIds.Count > 0 && !vendorIds.Contains(info.VendorId))
+                        continue;   //path hint matched by coincidence
+
+                    result.Add(info);
+                }
+            }
+            finally
+            {
+                HidNative.SetupDiDestroyDeviceInfoList(deviceInfoSet);
+            }
+
+            return result;
+        }
+
+        private static bool MatchesAnyHint(string path, List<string> hints)
+        {
+            string lower = path.ToLowerInvariant();
+            foreach (string hint in hints)
+            {
+                if (lower.Contains(hint))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>Read one interface's attributes and capabilities. Null if it can't be queried.</summary>
+        private static HidInterfaceInfo Describe(string path)
+        {
+                //Access 0: query-only, see the class remarks.
+            using (SafeFileHandle handle = HidNative.CreateFile(path, 0,
+                       HidNative.FILE_SHARE_READ | HidNative.FILE_SHARE_WRITE,
+                       IntPtr.Zero, HidNative.OPEN_EXISTING, 0, IntPtr.Zero))
+            {
+                if (handle.IsInvalid)
+                    return null;
+
+                HidNative.HIDD_ATTRIBUTES attributes = new HidNative.HIDD_ATTRIBUTES();
+                attributes.Size = Marshal.SizeOf(typeof(HidNative.HIDD_ATTRIBUTES));
+                if (!HidNative.HidD_GetAttributes(handle, ref attributes))
+                    return null;
+
+                HidInterfaceInfo info = new HidInterfaceInfo();
+                info.Path = path;
+                info.VendorId = attributes.VendorID;
+                info.ProductId = attributes.ProductID;
+                info.Product = ReadString(handle);
+
+                IntPtr preparsed;
+                if (!HidNative.HidD_GetPreparsedData(handle, out preparsed))
+                    return null;
+                try
+                {
+                    HidNative.HIDP_CAPS caps = new HidNative.HIDP_CAPS();
+                    if (HidNative.HidP_GetCaps(preparsed, ref caps) != HidNative.HIDP_STATUS_SUCCESS)
+                        return null;
+
+                    info.UsagePage = caps.UsagePage;
+                    info.Usage = caps.Usage;
+                    info.InputReportByteLength = caps.InputReportByteLength;
+                    info.OutputReportByteLength = caps.OutputReportByteLength;
+                }
+                finally
+                {
+                    HidNative.HidD_FreePreparsedData(preparsed);
+                }
+
+                return info;
+            }
+        }
+
+        private static string ReadString(SafeFileHandle handle)
+        {
+            byte[] buffer = new byte[254];   //HID string cap is 126 wchars incl. null
+            if (!HidNative.HidD_GetProductString(handle, buffer, buffer.Length))
+                return "";
+            string s = Encoding.Unicode.GetString(buffer);
+            int nul = s.IndexOf('\0');
+            if (nul >= 0)
+                s = s.Substring(0, nul);
+            return s.Trim();
+        }
+
+        private static string GetDevicePath(IntPtr deviceInfoSet, ref HidNative.SP_DEVICE_INTERFACE_DATA interfaceData)
+        {
+            int requiredSize = 0;
+                //First call sizes the buffer.
+            HidNative.SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref interfaceData, IntPtr.Zero, 0, ref requiredSize, IntPtr.Zero);
+            if (requiredSize <= 0)
+                return null;
+
+            IntPtr detailBuffer = Marshal.AllocHGlobal(requiredSize);
+            try
+            {
+                    //cbSize of SP_DEVICE_INTERFACE_DETAIL_DATA: 8 on 64-bit, 6 on 32-bit (4 + sizeof(WCHAR)).
+                Marshal.WriteInt32(detailBuffer, (IntPtr.Size == 8) ? 8 : 6);
+
+                if (!HidNative.SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref interfaceData, detailBuffer, requiredSize, ref requiredSize, IntPtr.Zero))
+                    return null;
+
+                    //The DevicePath string starts right after the cbSize DWORD.
+                return Marshal.PtrToStringAuto(new IntPtr(detailBuffer.ToInt64() + 4));
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(detailBuffer);
+            }
+        }
+    }
+}

@@ -91,15 +91,25 @@
     <Compile Include="Service\IDeviceNotification.cs" />
     <Compile Include="Service\BatteryDevice.cs" />
     <Compile Include="Service\DeviceManager.cs" />
+    <Compile Include="Service\HidDeviceSource.cs" />
     <Compile Include="Service\Battery\Core\DeviceTransport.cs" />
     <Compile Include="Service\Battery\Core\IBatteryDeviceContext.cs" />
     <Compile Include="Service\Battery\Core\IBatteryProvider.cs" />
     <Compile Include="Service\Battery\Core\IDeviceLinkState.cs" />
     <Compile Include="Service\Battery\Core\DeviceProperties.cs" />
+    <Compile Include="Service\Battery\Hid\HidNative.cs" />
+    <Compile Include="Service\Battery\Hid\HidInterfaceInfo.cs" />
+    <Compile Include="Service\Battery\Hid\HidInterfaceEnumerator.cs" />
+    <Compile Include="Service\Battery\Hid\HidDevice.cs" />
+    <Compile Include="Service\Battery\Hid\HidDeviceSpec.cs" />
     <Compile Include="Service\Battery\Providers\BatteryProviderRegistry.cs" />
+    <Compile Include="Service\Battery\Providers\HidDeviceSpecRegistry.cs" />
     <Compile Include="Service\Battery\Providers\Gatt\GattBatteryProvider.cs" />
     <Compile Include="Service\Battery\Providers\DeviceProperty\DevicePropertyBatteryProvider.cs" />
     <Compile Include="Service\Battery\Providers\Apple\AppleBatteryProvider.cs" />
+    <Compile Include="Service\Battery\Providers\Logitech\HidppTransport.cs" />
+    <Compile Include="Service\Battery\Providers\Logitech\LogitechVoltageCurve.cs" />
+    <Compile Include="Service\Battery\Providers\Logitech\LogitechBatteryProvider.cs" />
     <Compile Include="Service\Battery\Providers\Coarse\CoarseBatteryProvider.cs" />
     <EmbeddedResource Include="Info.resx">
       <DependentUpon>Info.cs</DependentUpon>

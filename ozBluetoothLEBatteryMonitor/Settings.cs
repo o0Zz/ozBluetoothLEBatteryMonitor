@@ -17,6 +17,7 @@ namespace BluetoothLEBatteryMonitor
         private bool UserClose = false;
         private bool UserShow = false;
         private bool isInitializing = true;
+        private bool updatingIcon = false;
         private Dictionary<string, NotifyIcon> deviceIcons = new Dictionary<string, NotifyIcon>();
         private Dictionary<string, bool> deviceLowBatteryNotificationDone = new Dictionary<string, bool>();
 
@@ -106,16 +107,34 @@ namespace BluetoothLEBatteryMonitor
                 return;
             }
 
-            ConcurrentDictionary<string, BatteryDevice> deviceDict = deviceManager.getDeviceList();
+                //refreshHidDevices below reports new devices synchronously, and OnNewDevice
+                //calls back into here. The nested call has nothing left to do -- the device is
+                //already in the dictionary this pass is about to walk -- so drop it.
+            if (updatingIcon)
+                return;
 
-                //Request to update battery level
-            foreach (BatteryDevice device in deviceDict.Values)
-                device.UpdateBatteryLevel();
+            updatingIcon = true;
+            try
+            {
+                    //USB HID devices have no watcher behind them; re-snapshot them each tick
+                    //so plugging or unplugging a dongle is picked up.
+                deviceManager.refreshHidDevices();
 
-            if (checkBoxOneIconPerDevice.Checked && !deviceDict.IsEmpty)
-                UpdateIconPerDevice(deviceDict);
-            else
-                UpdateSingleIcon(deviceDict);
+                ConcurrentDictionary<string, BatteryDevice> deviceDict = deviceManager.getDeviceList();
+
+                    //Request to update battery level
+                foreach (BatteryDevice device in deviceDict.Values)
+                    device.UpdateBatteryLevel();
+
+                if (checkBoxOneIconPerDevice.Checked && !deviceDict.IsEmpty)
+                    UpdateIconPerDevice(deviceDict);
+                else
+                    UpdateSingleIcon(deviceDict);
+            }
+            finally
+            {
+                updatingIcon = false;
+            }
         }
 
         private void UpdateSingleIcon(ConcurrentDictionary<string, BatteryDevice> deviceDict)
