@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
-using Windows.UI.Xaml.Automation.Peers;
 
 namespace PeripheralBatteryMonitor
 {
