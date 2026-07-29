@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
@@ -6,13 +7,9 @@ using Microsoft.Win32.SafeHandles;
 namespace BluetoothLEBatteryMonitor.Service.Battery.Hid
 {
     /// <summary>
-    /// An open HID interface that can be written to and read from with a timeout.
-    ///
-    /// The handle is opened with FILE_FLAG_OVERLAPPED because HID reads block until the
-    /// device sends an input report -- and a silent device (headset switched off, dongle
-    /// asleep) would otherwise hang the caller forever. Since the poll loop runs on the UI
-    /// thread, every operation is bounded: the I/O is issued asynchronously, waited on for
-    /// at most <c>timeoutMs</c>, then cancelled.
+    /// An open HID interface, in one of two modes -- see <see cref="Open"/> versus
+    /// <see cref="OpenForReportRequests"/>. The distinction is not cosmetic: it decides
+    /// whether the handle can wait for traffic the device sends on its own.
     ///
     /// Open one only for the duration of a transaction. The driver keeps a per-handle queue
     /// of input reports, so a short-lived handle guarantees the first report read is a
@@ -22,18 +19,53 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Hid
     {
         private SafeFileHandle handle;
 
+            //Whether the handle was opened FILE_FLAG_OVERLAPPED, which is what Read/Write need
+            //to be able to time out.
+        private readonly bool overlapped;
+
         public int InputReportByteLength { get; private set; }
         public int OutputReportByteLength { get; private set; }
 
-        private HidDevice(SafeFileHandle handle, int inputLength, int outputLength)
+        private HidDevice(SafeFileHandle handle, int inputLength, int outputLength, bool overlapped)
         {
             this.handle = handle;
             this.InputReportByteLength = inputLength;
             this.OutputReportByteLength = outputLength;
+            this.overlapped = overlapped;
         }
 
-        /// <summary>Open an interface for read/write. Null when it can't be opened.</summary>
+        /// <summary>
+        /// Open for <see cref="Read"/>/<see cref="Write"/>, i.e. for a request/response
+        /// conversation where the answer arrives as an input report the device sends.
+        ///
+        /// Uses FILE_FLAG_OVERLAPPED, because a HID read blocks until the device sends
+        /// something and a silent device (headset switched off, dongle asleep) would otherwise
+        /// hang the caller forever. Since the poll loop runs on the UI thread, every operation
+        /// has to be bounded: the I/O is issued asynchronously, waited on for at most
+        /// <c>timeoutMs</c>, then cancelled. Null when the interface can't be opened.
+        /// </summary>
         public static HidDevice Open(HidInterfaceInfo info)
+        {
+            return OpenInternal(info, true);
+        }
+
+        /// <summary>
+        /// Open for <see cref="GetInputReport"/> only -- asking the device for a report by id,
+        /// rather than waiting for one.
+        ///
+        /// Deliberately *not* overlapped. <c>HidD_GetInputReport</c> issues a synchronous
+        /// DeviceIoControl with a NULL OVERLAPPED, which Windows documents as unreliable on a
+        /// handle opened FILE_FLAG_OVERLAPPED ("can incorrectly report that the operation is
+        /// complete"). There is no timeout to lose by dropping it: this call goes out on the
+        /// control pipe and returns, it never waits on device traffic.
+        /// Null when the interface can't be opened.
+        /// </summary>
+        public static HidDevice OpenForReportRequests(HidInterfaceInfo info)
+        {
+            return OpenInternal(info, false);
+        }
+
+        private static HidDevice OpenInternal(HidInterfaceInfo info, bool overlapped)
         {
             if (info == null || String.IsNullOrEmpty(info.Path))
                 return null;
@@ -41,7 +73,8 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Hid
             SafeFileHandle h = HidNative.CreateFile(info.Path,
                 HidNative.GENERIC_READ | HidNative.GENERIC_WRITE,
                 HidNative.FILE_SHARE_READ | HidNative.FILE_SHARE_WRITE,
-                IntPtr.Zero, HidNative.OPEN_EXISTING, HidNative.FILE_FLAG_OVERLAPPED, IntPtr.Zero);
+                IntPtr.Zero, HidNative.OPEN_EXISTING,
+                overlapped ? HidNative.FILE_FLAG_OVERLAPPED : 0, IntPtr.Zero);
 
             if (h.IsInvalid)
             {
@@ -49,7 +82,7 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Hid
                 return null;
             }
 
-            return new HidDevice(h, info.InputReportByteLength, info.OutputReportByteLength);
+            return new HidDevice(h, info.InputReportByteLength, info.OutputReportByteLength, overlapped);
         }
 
         /// <summary>
@@ -59,6 +92,8 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Hid
         /// </summary>
         public bool Write(byte[] report, int timeoutMs)
         {
+            if (!EnsureOverlapped("Write"))
+                return false;
             if (report == null || report.Length != OutputReportByteLength)
                 return false;
 
@@ -99,6 +134,8 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Hid
         public bool Read(byte[] buffer, int timeoutMs, out int bytesRead)
         {
             bytesRead = 0;
+            if (!EnsureOverlapped("Read"))
+                return false;
             if (buffer == null || buffer.Length < InputReportByteLength)
                 return false;
 
@@ -162,6 +199,20 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Hid
             if (nul >= 0)
                 s = s.Substring(0, nul);
             return s;
+        }
+
+        /// <summary>
+        /// Refuse timed I/O on a non-overlapped handle rather than doing it unbounded. Without
+        /// FILE_FLAG_OVERLAPPED, ReadFile never returns ERROR_IO_PENDING, so the wait-then-cancel
+        /// dance below cannot happen and the call would block for as long as the device stays
+        /// silent -- on the UI thread, that is a hang, not a slow poll.
+        /// </summary>
+        private bool EnsureOverlapped(string operation)
+        {
+            if (overlapped)
+                return true;
+            Debug.WriteLine("[Hid] " + operation + " needs a handle from Open(), not OpenForReportRequests()");
+            return false;
         }
 
         public void Dispose()

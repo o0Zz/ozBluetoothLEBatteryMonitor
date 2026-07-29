@@ -112,23 +112,28 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Hid
                 info.ProductId = attributes.ProductID;
                 info.Product = ReadString(handle);
 
+                    //Capabilities are best-effort: a caller that needs them (matching on usage
+                    //page, sizing a report) checks them, but one that only needs the path and
+                    //VID/PID -- asking for a known report id by number -- does not. Dropping the
+                    //interface here would hide it from that caller for no reason.
                 IntPtr preparsed;
-                if (!HidNative.HidD_GetPreparsedData(handle, out preparsed))
-                    return null;
-                try
+                if (HidNative.HidD_GetPreparsedData(handle, out preparsed))
                 {
-                    HidNative.HIDP_CAPS caps = new HidNative.HIDP_CAPS();
-                    if (HidNative.HidP_GetCaps(preparsed, ref caps) != HidNative.HIDP_STATUS_SUCCESS)
-                        return null;
-
-                    info.UsagePage = caps.UsagePage;
-                    info.Usage = caps.Usage;
-                    info.InputReportByteLength = caps.InputReportByteLength;
-                    info.OutputReportByteLength = caps.OutputReportByteLength;
-                }
-                finally
-                {
-                    HidNative.HidD_FreePreparsedData(preparsed);
+                    try
+                    {
+                        HidNative.HIDP_CAPS caps = new HidNative.HIDP_CAPS();
+                        if (HidNative.HidP_GetCaps(preparsed, ref caps) == HidNative.HIDP_STATUS_SUCCESS)
+                        {
+                            info.UsagePage = caps.UsagePage;
+                            info.Usage = caps.Usage;
+                            info.InputReportByteLength = caps.InputReportByteLength;
+                            info.OutputReportByteLength = caps.OutputReportByteLength;
+                        }
+                    }
+                    finally
+                    {
+                        HidNative.HidD_FreePreparsedData(preparsed);
+                    }
                 }
 
                 return info;
