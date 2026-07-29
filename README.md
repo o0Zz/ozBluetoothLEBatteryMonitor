@@ -5,7 +5,9 @@
 ## Introduction
 Bluetooth Battery Monitor adds a small and simple battery display to your system tray, so you can see the remaining life of Bluetooth devices connected to your PC at a glance.
 
-It supports both **Bluetooth Low Energy (BLE)** devices (earbuds, fitness bands, modern headsets, BLE mice/keyboards) and **Bluetooth Classic (BR/EDR)** devices (older headsets, gaming headsets, AirPods on Windows). Battery level is read using the standard BLE GATT Battery Service when available, with automatic fallback to the Windows device-property battery report and the coarse `System.Devices.BatteryLife` indicator.
+It supports **Bluetooth Low Energy (BLE)** devices (earbuds, fitness bands, modern headsets, BLE mice/keyboards), **Bluetooth Classic (BR/EDR)** devices (older headsets, gaming headsets, AirPods on Windows), and devices that are not Bluetooth at all but come with **their own USB dongle** (Logitech LIGHTSPEED, e.g. the PRO X Wireless headset) — for which Windows reports no battery of its own.
+
+Battery level is read from whichever source a device actually supports: the standard BLE GATT Battery Service, the battery level Windows publishes for a paired Bluetooth device, the vendor HID report used by Apple Magic mice/trackpads/keyboards, or Logitech's HID++ protocol over the dongle.
 
 **Notifications**
 Whenever a device drops below 20% a balloon notification fires (once per device, per low-battery transition).

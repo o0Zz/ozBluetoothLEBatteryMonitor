@@ -31,7 +31,6 @@ namespace BluetoothLEBatteryMonitor.Service
             DeviceProperties.PROP_AEP_IS_PAIRED,
             DeviceProperties.PROP_AEP_IS_CONNECTED,
             DeviceProperties.PROP_BATTERY_LEVEL,
-            DeviceProperties.PROP_BATTERY_LIFE,
         };
 
         private ConcurrentDictionary<string, BatteryDevice> deviceDict = new ConcurrentDictionary<string, BatteryDevice>();

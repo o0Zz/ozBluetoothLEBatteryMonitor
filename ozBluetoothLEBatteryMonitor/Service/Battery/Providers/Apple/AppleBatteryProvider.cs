@@ -9,8 +9,8 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Providers
 {
     /// <summary>
     /// Reads battery for Apple "Magic" devices (Magic Mouse / Magic Trackpad / Magic
-    /// Keyboard). These do NOT expose battery through the standard Bluetooth properties
-    /// (System.Devices.BatteryLife / DEVPKEY_Device_BatteryLevel), so the other providers
+    /// Keyboard). These do NOT expose battery through the Bluetooth property bag
+    /// (<see cref="DeviceProperties.PROP_BATTERY_LEVEL"/>), so the other providers
     /// never see them. Instead they report battery through a vendor HID input report
     /// (report id 0x90), where byte[2] holds the level as a plain 0..100 percentage -- only
     /// reachable through the raw HID stack (hid.dll over a CreateFile handle), which this

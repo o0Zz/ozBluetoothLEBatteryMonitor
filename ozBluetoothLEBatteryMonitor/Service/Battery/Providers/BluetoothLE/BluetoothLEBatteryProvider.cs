@@ -9,12 +9,17 @@ using BluetoothLEBatteryMonitor.Service.Battery.Core;
 namespace BluetoothLEBatteryMonitor.Service.Battery.Providers
 {
     /// <summary>
-    /// Reads battery from the GATT Battery Service 0x180F / level characteristic 0x2A19.
-    /// BLE only; latches off if the service is absent so it's attempted once per device
-    /// lifetime. Uses 30 s connect / 5 s read timeouts and caches the connection, so a bound
-    /// device doesn't reconnect on every poll.
+    /// Reads battery over Bluetooth Low Energy, from the **GATT Battery Service 0x180F /
+    /// level characteristic 0x2A19**. BLE only -- GATT does not exist on Bluetooth Classic --
+    /// and it latches off if the service is absent, so an unsupported device is probed once
+    /// per lifetime rather than every poll. Uses 30 s connect / 5 s read timeouts and caches
+    /// the connection, so a bound device doesn't reconnect on every poll.
+    ///
+    /// Note this is not the only provider that serves BLE devices: one that reports no GATT
+    /// battery service can still be read by <see cref="BluetoothBatteryProvider"/> if Windows
+    /// publishes a level for it.
     /// </summary>
-    public class GattBatteryProvider : IBatteryProvider, IDeviceLinkState
+    public class BluetoothLEBatteryProvider : IBatteryProvider, IDeviceLinkState
     {
         private static readonly Guid BATTERY_UUID = Guid.Parse("{0000180F-0000-1000-8000-00805F9B34FB}");
         private static readonly Guid BATTERY_LEVEL_UUID = Guid.Parse("{00002A19-0000-1000-8000-00805F9B34FB}");

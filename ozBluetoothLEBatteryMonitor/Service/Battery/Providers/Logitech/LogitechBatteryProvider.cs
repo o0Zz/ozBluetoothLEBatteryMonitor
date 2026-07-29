@@ -10,7 +10,8 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Providers.Logitech
     /// PRO X Wireless headset to begin with. These are not Bluetooth devices at all, so they
     /// are discovered through the HID layer (see <see cref="HidSpec"/>) and none of the
     /// Bluetooth property-bag providers can see them; Windows exposes no battery for them
-    /// either (no DEVPKEY_Device_BatteryLevel, no HID battery node).
+    /// either (<see cref="DeviceProperties.PROP_BATTERY_LEVEL"/> is absent from every one of
+    /// the device's nodes, and there is no HID-battery node).
     ///
     /// Battery comes from HID++ 2.0 over the device's vendor collection. Which *feature*
     /// carries it varies per device, so <see cref="batteryFeatures"/> is probed in order and
@@ -187,8 +188,9 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Providers.Logitech
                 return stateOfCharge;
             }
 
-                //State of charge not supported: fall back to the discrete level bitfield,
-                //using the same representative buckets as CoarseBatteryProvider.
+                //State of charge not supported: fall back to the discrete level bitfield. This
+                //really is a coarse four-way enum, so each level becomes a representative
+                //percentage -- a band, not a measurement.
             int level = reply[5];
             if ((level & 0x08) != 0) return 90;   //full
             if ((level & 0x04) != 0) return 60;   //good

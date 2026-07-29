@@ -104,13 +104,12 @@
     <Compile Include="Service\Battery\Hid\HidDeviceSpec.cs" />
     <Compile Include="Service\Battery\Providers\BatteryProviderRegistry.cs" />
     <Compile Include="Service\Battery\Providers\HidDeviceSpecRegistry.cs" />
-    <Compile Include="Service\Battery\Providers\Gatt\GattBatteryProvider.cs" />
-    <Compile Include="Service\Battery\Providers\DeviceProperty\DevicePropertyBatteryProvider.cs" />
+    <Compile Include="Service\Battery\Providers\BluetoothLE\BluetoothLEBatteryProvider.cs" />
+    <Compile Include="Service\Battery\Providers\Bluetooth\BluetoothBatteryProvider.cs" />
     <Compile Include="Service\Battery\Providers\Apple\AppleBatteryProvider.cs" />
     <Compile Include="Service\Battery\Providers\Logitech\HidppTransport.cs" />
     <Compile Include="Service\Battery\Providers\Logitech\LogitechVoltageCurve.cs" />
     <Compile Include="Service\Battery\Providers\Logitech\LogitechBatteryProvider.cs" />
-    <Compile Include="Service\Battery\Providers\Coarse\CoarseBatteryProvider.cs" />
     <EmbeddedResource Include="Info.resx">
       <DependentUpon>Info.cs</DependentUpon>
     </EmbeddedResource>

@@ -9,10 +9,18 @@ namespace BluetoothLEBatteryMonitor.Service.Battery.Core
     {
         /* ---- Keys delivered by WinRT (DeviceInformation.Properties) ---- */
 
-            //DEVPROPKEY string-form: "{guid} pid". DEVPKEY_Device_BatteryLevel reports a byte 0..100.
+            //DEVPROPKEY string-form: "{guid} pid". A byte 0..100 -- a **percentage**.
+            //
+            //Windows surfaces this same property under two names, and the property bag carries
+            //both spellings side by side: this raw DEVPROPKEY, and the canonical name
+            //"System.Devices.BatteryLife" (documented with exactly this formatID and propID 2).
+            //They are aliases of one value, not two sources -- so read it once, through this key.
+            //There is no coarse Critical/Low/Average/Full enum behind either spelling; a
+            //provider that switched on 1..4 here would silently turn a nearly-flat battery
+            //(3%) into a healthy-looking one (60%).
+            //
+            //Both spellings are delivered as null while the device is disconnected.
         public const string PROP_BATTERY_LEVEL = "{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2";
-            //Coarse battery enum (Critical/Low/Average/Full).
-        public const string PROP_BATTERY_LIFE = "System.Devices.BatteryLife";
         public const string PROP_AEP_IS_CONNECTED = "System.Devices.Aep.IsConnected";
         public const string PROP_AEP_IS_PAIRED = "System.Devices.Aep.IsPaired";
         public const string PROP_AEP_DEVICE_ADDRESS = "System.Devices.Aep.DeviceAddress";

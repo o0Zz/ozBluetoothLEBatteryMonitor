@@ -13,16 +13,22 @@
       "problemMatcher": []
     },
     {
-      // Builds the Debug configuration with Visual Studio MSBuild (the legacy
-      // ToolsVersion=15 csproj can't be built with `dotnet build`).
+      // Needs Visual Studio MSBuild -- the legacy ToolsVersion=15 csproj can't be built
+      // with `dotnet build`, and the .NET Framework MSBuild in C:\Windows silently falls
+      // back to ToolsVersion 4.0 (C# 5 compiler).
+      //
+      // MSBuild.exe is located with vswhere rather than hardcoded, because its path moves
+      // with every VS version and edition. -prerelease is required: without it, Insiders
+      // and Preview installs are not reported at all, and vswhere prints nothing --
+      // indistinguishable from "no Visual Studio installed". vswhere itself ships with the
+      // VS Installer and is always under Program Files (x86), even on 64-bit Windows.
       "label": "build (Debug)",
       "type": "process",
-      "command": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe",
+      "command": "powershell.exe",
       "args": [
-        "${workspaceFolder}\\ozBluetoothLEBatteryMonitor.sln",
-        "/p:Configuration=Debug",
-        "/v:minimal",
-        "/nologo"
+        "-NoProfile",
+        "-Command",
+        "& (& 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe' -latest -prerelease -find 'MSBuild\\**\\Bin\\MSBuild.exe' | Select-Object -First 1) '${workspaceFolder}\\ozBluetoothLEBatteryMonitor.sln' /p:Configuration=Debug /v:minimal /nologo; exit $LASTEXITCODE"
       ],
       "group": {
         "kind": "build",
