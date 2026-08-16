@@ -15,12 +15,18 @@ namespace PeripheralBatteryMonitor.Battery.Hid
         public ushort Usage;
         public int InputReportByteLength;
         public int OutputReportByteLength;
+
+            //Length of this collection's feature report, report id included, or 0 when it
+            //declares none. Worth matching on: a vendor protocol carried over feature reports
+            //has a fixed size, so the length identifies the collection more reliably than the
+            //usage page does -- the Razer report is 91 bytes and nothing else on the device is.
+        public int FeatureReportByteLength;
         public string Product;          //HID product string; may be empty
 
         public override string ToString()
         {
-            return string.Format("VID_{0:X4}&PID_{1:X4} UP=0x{2:X4} U=0x{3:X4} '{4}'",
-                VendorId, ProductId, UsagePage, Usage, Product);
+            return string.Format("VID_{0:X4}&PID_{1:X4} UP=0x{2:X4} U=0x{3:X4} feat={4} '{5}'",
+                VendorId, ProductId, UsagePage, Usage, FeatureReportByteLength, Product);
         }
     }
 }

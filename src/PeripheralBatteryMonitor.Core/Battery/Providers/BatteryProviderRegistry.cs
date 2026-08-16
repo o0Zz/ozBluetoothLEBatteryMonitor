@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using PeripheralBatteryMonitor.Battery.Core;
 using PeripheralBatteryMonitor.Battery.Providers.Logitech;
+using PeripheralBatteryMonitor.Battery.Providers.Razer;
 using PeripheralBatteryMonitor.Battery.Providers.SteelSeries;
 
 namespace PeripheralBatteryMonitor.Battery.Providers
@@ -9,7 +10,7 @@ namespace PeripheralBatteryMonitor.Battery.Providers
     /// <summary>
     /// Ordered registry of battery providers. Registration order is priority order: when a
     /// device is first polled, providers are probed top-down and it binds to the first whose
-    /// <see cref="IBatteryProvider.ReadBattery"/> returns a value. The four built-ins are
+    /// <see cref="IBatteryProvider.ReadBattery"/> returns a value. The six built-ins are
     /// registered by the static constructor; callers may append their own via
     /// <see cref="Register"/> before the first device is created.
     /// </summary>
@@ -26,6 +27,7 @@ namespace PeripheralBatteryMonitor.Battery.Providers
             Register(() => new AppleBatteryProvider());           //3. Apple Magic HID report 0x90
             Register(() => new LogitechBatteryProvider());        //4. Logitech HID++ (USB HID only)
             Register(() => new SteelSeriesBatteryProvider());     //5. SteelSeries Arctis Nova (USB HID only)
+            Register(() => new RazerBatteryProvider());           //6. Razer feature reports (USB HID only)
         }
 
         /// <summary>Append a provider factory. Later registrations have lower priority.</summary>

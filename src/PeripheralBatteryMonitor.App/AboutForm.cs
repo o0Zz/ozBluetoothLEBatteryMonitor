@@ -25,6 +25,7 @@ namespace PeripheralBatteryMonitor
             "Apple Magic Mouse, Trackpad and Keyboard",
             "Logitech LIGHTSPEED devices on their own USB dongle",
             "SteelSeries Arctis Nova 5 / 7 wireless headsets",
+            "Razer wireless mice on a HyperSpeed dongle or Bluetooth",
         };
 
         internal AboutForm()

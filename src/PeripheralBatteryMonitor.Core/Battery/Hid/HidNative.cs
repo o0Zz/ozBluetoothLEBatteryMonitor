@@ -95,6 +95,15 @@ namespace PeripheralBatteryMonitor.Battery.Hid
         [DllImport("hid.dll", SetLastError = true)]
         internal static extern bool HidD_GetInputReport(SafeFileHandle handle, byte[] reportBuffer, int reportBufferLength);
 
+            //SET_REPORT / GET_REPORT(Feature) on the control pipe. Both IOCTLs behind these are
+            //declared FILE_ANY_ACCESS, which is why they work on a handle opened with desired
+            //access 0 -- the only way to reach a collection Windows holds exclusively.
+        [DllImport("hid.dll", SetLastError = true)]
+        internal static extern bool HidD_SetFeature(SafeFileHandle handle, byte[] reportBuffer, int reportBufferLength);
+
+        [DllImport("hid.dll", SetLastError = true)]
+        internal static extern bool HidD_GetFeature(SafeFileHandle handle, byte[] reportBuffer, int reportBufferLength);
+
         [DllImport("hid.dll", SetLastError = true)]
         internal static extern bool HidD_GetPreparsedData(SafeFileHandle handle, out IntPtr preparsedData);
 

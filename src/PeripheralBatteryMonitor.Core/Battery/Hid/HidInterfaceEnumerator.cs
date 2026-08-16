@@ -128,6 +128,7 @@ namespace PeripheralBatteryMonitor.Battery.Hid
                             info.Usage = caps.Usage;
                             info.InputReportByteLength = caps.InputReportByteLength;
                             info.OutputReportByteLength = caps.OutputReportByteLength;
+                            info.FeatureReportByteLength = caps.FeatureReportByteLength;
                         }
                     }
                     finally

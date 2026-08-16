@@ -20,12 +20,30 @@ namespace PeripheralBatteryMonitor.Battery.Hid
         public readonly ushort Usage;          //0 = any
         public readonly string FallbackName;   //used when the device exposes no product string
 
+            //Exact feature report length the collection must declare, or 0 for "don't care".
+            //
+            //Usage page and usage are the obvious way to pick a collection out of the several a
+            //device publishes, and they are enough for a vendor-defined page. They are not
+            //enough when the protocol rides on a *standard* page: a Razer mouse answers its
+            //vendor protocol on the consumer-control collection, and matching page 0x000C
+            //usage 0x0001 alone would also catch the volume-key collection sitting right next
+            //to it. The 91-byte feature report is what actually identifies it, so allow a spec
+            //to say so.
+        public readonly int FeatureReportByteLength;
+
         public HidDeviceSpec(ushort vendorId, ushort[] productIds, ushort usagePage, ushort usage, string fallbackName)
+            : this(vendorId, productIds, usagePage, usage, 0, fallbackName)
+        {
+        }
+
+        public HidDeviceSpec(ushort vendorId, ushort[] productIds, ushort usagePage, ushort usage,
+                             int featureReportByteLength, string fallbackName)
         {
             this.VendorId = vendorId;
             this.ProductIds = productIds;
             this.UsagePage = usagePage;
             this.Usage = usage;
+            this.FeatureReportByteLength = featureReportByteLength;
             this.FallbackName = fallbackName;
         }
 
@@ -38,6 +56,8 @@ namespace PeripheralBatteryMonitor.Battery.Hid
             if (UsagePage != 0 && info.UsagePage != UsagePage)
                 return false;
             if (Usage != 0 && info.Usage != Usage)
+                return false;
+            if (FeatureReportByteLength != 0 && info.FeatureReportByteLength != FeatureReportByteLength)
                 return false;
 
             if (ProductIds != null && ProductIds.Length > 0)

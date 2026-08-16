@@ -70,6 +70,7 @@ namespace PeripheralBatteryMonitor
             properties[DeviceProperties.PROP_HID_USAGE] = (int)info.Usage;
             properties[DeviceProperties.PROP_HID_INPUT_REPORT_LENGTH] = info.InputReportByteLength;
             properties[DeviceProperties.PROP_HID_OUTPUT_REPORT_LENGTH] = info.OutputReportByteLength;
+            properties[DeviceProperties.PROP_HID_FEATURE_REPORT_LENGTH] = info.FeatureReportByteLength;
             return properties;
         }
     }

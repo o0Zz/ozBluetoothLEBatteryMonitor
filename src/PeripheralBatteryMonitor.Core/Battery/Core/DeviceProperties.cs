@@ -39,5 +39,6 @@ namespace PeripheralBatteryMonitor.Battery.Core
         public const string PROP_HID_USAGE = "PeripheralBatteryMonitor.Hid.Usage";
         public const string PROP_HID_INPUT_REPORT_LENGTH = "PeripheralBatteryMonitor.Hid.InputReportByteLength";
         public const string PROP_HID_OUTPUT_REPORT_LENGTH = "PeripheralBatteryMonitor.Hid.OutputReportByteLength";
+        public const string PROP_HID_FEATURE_REPORT_LENGTH = "PeripheralBatteryMonitor.Hid.FeatureReportByteLength";
     }
 }

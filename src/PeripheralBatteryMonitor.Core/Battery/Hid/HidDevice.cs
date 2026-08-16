@@ -25,12 +25,14 @@ namespace PeripheralBatteryMonitor.Battery.Hid
 
         public int InputReportByteLength { get; private set; }
         public int OutputReportByteLength { get; private set; }
+        public int FeatureReportByteLength { get; private set; }
 
-        private HidDevice(SafeFileHandle handle, int inputLength, int outputLength, bool overlapped)
+        private HidDevice(SafeFileHandle handle, HidInterfaceInfo info, bool overlapped)
         {
             this.handle = handle;
-            this.InputReportByteLength = inputLength;
-            this.OutputReportByteLength = outputLength;
+            this.InputReportByteLength = info.InputReportByteLength;
+            this.OutputReportByteLength = info.OutputReportByteLength;
+            this.FeatureReportByteLength = info.FeatureReportByteLength;
             this.overlapped = overlapped;
         }
 
@@ -46,7 +48,7 @@ namespace PeripheralBatteryMonitor.Battery.Hid
         /// </summary>
         public static HidDevice Open(HidInterfaceInfo info)
         {
-            return OpenInternal(info, true);
+            return OpenInternal(info, true, HidNative.GENERIC_READ | HidNative.GENERIC_WRITE);
         }
 
         /// <summary>
@@ -62,16 +64,36 @@ namespace PeripheralBatteryMonitor.Battery.Hid
         /// </summary>
         public static HidDevice OpenForReportRequests(HidInterfaceInfo info)
         {
-            return OpenInternal(info, false);
+            return OpenInternal(info, false, HidNative.GENERIC_READ | HidNative.GENERIC_WRITE);
         }
 
-        private static HidDevice OpenInternal(HidInterfaceInfo info, bool overlapped)
+        /// <summary>
+        /// Open for <see cref="GetFeature"/>/<see cref="SetFeature"/> only -- a vendor protocol
+        /// carried on the control pipe rather than in the report streams.
+        ///
+        /// Opened with desired access **0**, and that is the whole point of this mode rather
+        /// than an optimisation. A vendor protocol often lives on a collection Windows opens
+        /// exclusively for itself -- Razer's sits behind the mouse and consumer-control
+        /// collections -- where CreateFile with GENERIC_READ|GENERIC_WRITE fails outright with
+        /// ERROR_ACCESS_DENIED. The IOCTLs behind HidD_GetFeature/HidD_SetFeature are declared
+        /// FILE_ANY_ACCESS, so a query-only handle drives them perfectly well; it just cannot
+        /// do ReadFile/WriteFile, which this mode does not offer. Not overlapped, for the same
+        /// reason <see cref="OpenForReportRequests"/> is not: these calls go out on the control
+        /// pipe and return, they never wait on device traffic.
+        /// Null when the interface can't be opened.
+        /// </summary>
+        public static HidDevice OpenForFeatureReports(HidInterfaceInfo info)
+        {
+            return OpenInternal(info, false, 0);
+        }
+
+        private static HidDevice OpenInternal(HidInterfaceInfo info, bool overlapped, uint desiredAccess)
         {
             if (info == null || String.IsNullOrEmpty(info.Path))
                 return null;
 
             SafeFileHandle h = HidNative.CreateFile(info.Path,
-                HidNative.GENERIC_READ | HidNative.GENERIC_WRITE,
+                desiredAccess,
                 HidNative.FILE_SHARE_READ | HidNative.FILE_SHARE_WRITE,
                 IntPtr.Zero, HidNative.OPEN_EXISTING,
                 overlapped ? HidNative.FILE_FLAG_OVERLAPPED : 0, IntPtr.Zero);
@@ -82,7 +104,7 @@ namespace PeripheralBatteryMonitor.Battery.Hid
                 return null;
             }
 
-            return new HidDevice(h, info.InputReportByteLength, info.OutputReportByteLength, overlapped);
+            return new HidDevice(h, info, overlapped);
         }
 
         /// <summary>
@@ -188,6 +210,30 @@ namespace PeripheralBatteryMonitor.Battery.Hid
             return HidNative.HidD_GetInputReport(handle, report, report.Length);
         }
 
+        /// <summary>
+        /// Send a feature report (SET_REPORT on the control pipe). <paramref name="report"/>
+        /// must be <see cref="FeatureReportByteLength"/> bytes with the report id in byte 0 --
+        /// the class driver validates the length against the report descriptor and fails the
+        /// call rather than truncating.
+        /// </summary>
+        public bool SetFeature(byte[] report)
+        {
+            if (report == null || report.Length != FeatureReportByteLength)
+                return false;
+            return HidNative.HidD_SetFeature(handle, report, report.Length);
+        }
+
+        /// <summary>
+        /// Read a feature report back (GET_REPORT on the control pipe). Same size rule as
+        /// <see cref="SetFeature"/>; byte 0 carries the report id being asked for.
+        /// </summary>
+        public bool GetFeature(byte[] report)
+        {
+            if (report == null || report.Length != FeatureReportByteLength)
+                return false;
+            return HidNative.HidD_GetFeature(handle, report, report.Length);
+        }
+
         /// <summary>The HID serial number string, or "" when the device doesn't expose one.</summary>
         public string GetSerialNumber()
         {
@@ -211,7 +257,7 @@ namespace PeripheralBatteryMonitor.Battery.Hid
         {
             if (overlapped)
                 return true;
-            Debug.WriteLine("[Hid] " + operation + " needs a handle from Open(), not OpenForReportRequests()");
+            Debug.WriteLine("[Hid] " + operation + " needs a handle from Open(), not OpenForReportRequests()/OpenForFeatureReports()");
             return false;
         }
 

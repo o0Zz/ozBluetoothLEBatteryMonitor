@@ -40,6 +40,13 @@ namespace PeripheralBatteryMonitor.Battery.Providers
             info.Path = path.ToString();
             info.InputReportByteLength = inputLength;
             info.OutputReportByteLength = outputLength;
+
+                //Optional: a collection with no feature reports simply leaves this 0, which is
+                //the same thing the enumerator would have recorded.
+            int featureLength;
+            if (TryGetInt(ctx, DeviceProperties.PROP_HID_FEATURE_REPORT_LENGTH, out featureLength))
+                info.FeatureReportByteLength = featureLength;
+
             return info;
         }
 
