@@ -36,6 +36,10 @@ namespace PeripheralBatteryMonitor
             this.numericUpDownRefreshPeriod = new System.Windows.Forms.NumericUpDown();
             this.labelRefreshUnit = new System.Windows.Forms.Label();
             this.hintRefreshPeriod = new System.Windows.Forms.Label();
+            this.layoutLanguage = new System.Windows.Forms.FlowLayoutPanel();
+            this.labelLanguage = new System.Windows.Forms.Label();
+            this.comboBoxLanguage = new System.Windows.Forms.ComboBox();
+            this.hintLanguage = new System.Windows.Forms.Label();
             this.groupDevices = new System.Windows.Forms.GroupBox();
             this.layoutDevices = new System.Windows.Forms.FlowLayoutPanel();
             this.checkBoxScanForEver = new System.Windows.Forms.CheckBox();
@@ -52,6 +56,7 @@ namespace PeripheralBatteryMonitor
             this.groupGeneral.SuspendLayout();
             this.layoutGeneral.SuspendLayout();
             this.layoutRefreshPeriod.SuspendLayout();
+            this.layoutLanguage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRefreshPeriod)).BeginInit();
             this.groupDevices.SuspendLayout();
             this.layoutDevices.SuspendLayout();
@@ -148,6 +153,8 @@ namespace PeripheralBatteryMonitor
             this.layoutGeneral.Controls.Add(this.hintNotification);
             this.layoutGeneral.Controls.Add(this.layoutRefreshPeriod);
             this.layoutGeneral.Controls.Add(this.hintRefreshPeriod);
+            this.layoutGeneral.Controls.Add(this.layoutLanguage);
+            this.layoutGeneral.Controls.Add(this.hintLanguage);
             this.layoutGeneral.Dock = System.Windows.Forms.DockStyle.Fill;
             this.layoutGeneral.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.layoutGeneral.Margin = new System.Windows.Forms.Padding(0);
@@ -208,12 +215,22 @@ namespace PeripheralBatteryMonitor
             // labelRefreshPeriod
             //
             this.labelRefreshPeriod.AutoSize = true;
-            this.labelRefreshPeriod.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            // Anchor.None centres a child vertically inside a left-to-right FlowLayoutPanel
+            // row. It replaces a hand-tuned top margin of 6 that faked the same thing: that
+            // number was measured against a 13 px label beside a 20 px spin box at 96 DPI, and
+            // above 100% the label grows to 20 px while the constant does not, dropping the
+            // caption 3 px below the number it labels. Same trap as ListView column widths.
+            this.labelRefreshPeriod.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.labelRefreshPeriod.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.labelRefreshPeriod.Name = "labelRefreshPeriod";
             this.labelRefreshPeriod.Text = "Refresh period:";
             //
             // numericUpDownRefreshPeriod
             //
+            // No Anchor here, unlike the labels either side. NumericUpDown is a
+            // ContainerControl and does its own auto-scaling pass; combining that with
+            // FlowLayoutPanel's Anchor.None centring put it 12 px below its own caption at
+            // 150%. Left at the default it anchors top-left and the labels centre on it.
             this.numericUpDownRefreshPeriod.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.numericUpDownRefreshPeriod.Maximum = new decimal(new int[] {
             1440,
@@ -238,7 +255,8 @@ namespace PeripheralBatteryMonitor
             // labelRefreshUnit
             //
             this.labelRefreshUnit.AutoSize = true;
-            this.labelRefreshUnit.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.labelRefreshUnit.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.labelRefreshUnit.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.labelRefreshUnit.Name = "labelRefreshUnit";
             this.labelRefreshUnit.Text = "min";
             //
@@ -250,6 +268,51 @@ namespace PeripheralBatteryMonitor
             this.hintRefreshPeriod.MaximumSize = new System.Drawing.Size(400, 0);
             this.hintRefreshPeriod.Name = "hintRefreshPeriod";
             this.hintRefreshPeriod.Text = "How often every tracked device is polled. Between 1 minute and 24 hours.";
+            //
+            // layoutLanguage
+            //
+            this.layoutLanguage.AutoSize = true;
+            this.layoutLanguage.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.layoutLanguage.Controls.Add(this.labelLanguage);
+            this.layoutLanguage.Controls.Add(this.comboBoxLanguage);
+            this.layoutLanguage.Margin = new System.Windows.Forms.Padding(0, 10, 0, 0);
+            this.layoutLanguage.Name = "layoutLanguage";
+            this.layoutLanguage.TabIndex = 3;
+            this.layoutLanguage.WrapContents = false;
+            //
+            // labelLanguage
+            //
+            this.labelLanguage.AutoSize = true;
+            this.labelLanguage.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.labelLanguage.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.labelLanguage.Name = "labelLanguage";
+            this.labelLanguage.Text = "Language:";
+            //
+            // comboBoxLanguage
+            //
+            // DropDownList, not DropDown: the list is fixed and typing into it would only
+            // ever produce a value that is not a language.
+            this.comboBoxLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxLanguage.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.comboBoxLanguage.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.comboBoxLanguage.Name = "comboBoxLanguage";
+            // Deliberately no Size here. A ComboBox takes its height from its font once, at
+            // construction, and AutoScaleMode.Font never revisits it -- so any value written
+            // here is pinned for the life of the form. At 150% that left a 21 px box beside a
+            // 20 px caption while the row sized itself to the 31 px the box actually wanted,
+            // which is what threw the caption out of line. Settings.FitLanguageBox sizes it
+            // from the font after scaling instead.
+            this.comboBoxLanguage.TabIndex = 0;
+            this.comboBoxLanguage.SelectedIndexChanged += new System.EventHandler(this.comboBoxLanguage_SelectedIndexChanged);
+            //
+            // hintLanguage
+            //
+            this.hintLanguage.AutoSize = true;
+            this.hintLanguage.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.hintLanguage.Margin = new System.Windows.Forms.Padding(3, 2, 3, 0);
+            this.hintLanguage.MaximumSize = new System.Drawing.Size(400, 0);
+            this.hintLanguage.Name = "hintLanguage";
+            this.hintLanguage.Text = "Applies straight away. Names reported by a device stay as the device spells them.";
             //
             // groupDevices
             //
@@ -409,6 +472,8 @@ namespace PeripheralBatteryMonitor
             this.layoutGeneral.PerformLayout();
             this.layoutRefreshPeriod.ResumeLayout(false);
             this.layoutRefreshPeriod.PerformLayout();
+            this.layoutLanguage.ResumeLayout(false);
+            this.layoutLanguage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRefreshPeriod)).EndInit();
             this.groupDevices.ResumeLayout(false);
             this.groupDevices.PerformLayout();
@@ -441,6 +506,10 @@ namespace PeripheralBatteryMonitor
         private System.Windows.Forms.NumericUpDown numericUpDownRefreshPeriod;
         private System.Windows.Forms.Label labelRefreshUnit;
         private System.Windows.Forms.Label hintRefreshPeriod;
+        private System.Windows.Forms.FlowLayoutPanel layoutLanguage;
+        private System.Windows.Forms.Label labelLanguage;
+        private System.Windows.Forms.ComboBox comboBoxLanguage;
+        private System.Windows.Forms.Label hintLanguage;
         private System.Windows.Forms.GroupBox groupDevices;
         private System.Windows.Forms.FlowLayoutPanel layoutDevices;
         private System.Windows.Forms.CheckBox checkBoxScanForEver;

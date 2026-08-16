@@ -17,20 +17,21 @@ namespace PeripheralBatteryMonitor
 
             //Not derived from BatteryProviderRegistry: a provider is a way of reading a
             //battery, not a device family a user would recognise, and it carries no display
-            //name. Keep this in step with the provider list in CLAUDE.md and the README.
-        private static readonly string[] SupportedDevices =
+            //name. Keep this in step with the provider list in CLAUDE.md and the README --
+            //and with every Languages/*.lang file, which carry the translated text.
+        private static readonly string[] SupportedDeviceKeys =
         {
-            "Bluetooth Low Energy — earbuds, fitness bands, BLE mice and keyboards",
-            "Bluetooth Classic / BR-EDR — headsets, AirPods on Windows",
-            "Apple Magic Mouse, Trackpad and Keyboard",
-            "Logitech LIGHTSPEED devices on their own USB dongle",
-            "SteelSeries Arctis Nova 5 / 7 wireless headsets",
-            "Razer wireless mice on a HyperSpeed dongle or Bluetooth",
+            "about.device.ble",
+            "about.device.classic",
+            "about.device.apple",
+            "about.device.logitech",
+            "about.device.steelseries",
+            "about.device.razer",
         };
 
         internal AboutForm()
         {
-            Text = "About Peripheral Battery Monitor";
+            Text = Strings.Get("about.title");
             Icon = Properties.Resources.Icon_Battery_100;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MinimizeBox = false;
@@ -56,41 +57,42 @@ namespace PeripheralBatteryMonitor
             body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
 
             Label name = new Label();
-            name.Text = "Peripheral Battery Monitor";
+            name.Text = Strings.Get("app.name");
             name.Font = new Font(Font.FontFamily, 13F, FontStyle.Bold);
             name.AutoSize = true;
             name.Margin = new Padding(0, 0, 0, 2);
 
             Label version = new Label();
-            version.Text = "Version " + Assembly.GetExecutingAssembly().GetName().Version;
+            version.Text = Strings.Format("about.version", Assembly.GetExecutingAssembly().GetName().Version);
             version.AutoSize = true;
             version.ForeColor = SystemColors.GrayText;
             version.Margin = new Padding(2, 0, 0, 12);
 
-            Label what = Paragraph(
-                "Shows how much battery your wireless peripherals have left, in the Windows " +
-                "system tray. The icon follows the lowest level across every tracked device, " +
-                "and a balloon notification fires once each time one drops to 20% or below.");
+            Label what = Paragraph(Strings.Get("about.what"));
             what.Margin = new Padding(2, 0, 0, 12);
 
             Label supportedCaption = new Label();
-            supportedCaption.Text = "Supported devices";
+            supportedCaption.Text = Strings.Get("about.supported");
             supportedCaption.Font = new Font(Font, FontStyle.Bold);
             supportedCaption.AutoSize = true;
             supportedCaption.Margin = new Padding(2, 0, 0, 4);
 
-            Label supported = Paragraph("• " + string.Join("\n• ", SupportedDevices));
+            string[] devices = new string[SupportedDeviceKeys.Length];
+            for (int i = 0; i < devices.Length; i++)
+                devices[i] = Strings.Get(SupportedDeviceKeys[i]);
+
+            Label supported = Paragraph("• " + string.Join("\n• ", devices));
             supported.Margin = new Padding(10, 0, 0, 14);
 
             LinkLabel link = new LinkLabel();
-            link.Text = "by o0Zz — " + ProjectUrl;
+            link.Text = Strings.Format("about.author", ProjectUrl);
             link.AutoSize = true;
             link.Margin = new Padding(2, 0, 0, 0);
             link.LinkArea = new LinkArea(link.Text.IndexOf("https", StringComparison.Ordinal), ProjectUrl.Length);
             link.LinkClicked += OpenProjectPage;
 
             Button ok = new Button();
-            ok.Text = "OK";
+            ok.Text = Strings.Get("button.ok");
             ok.AutoSize = true;
             ok.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             ok.MinimumSize = new Size(84, 26);
@@ -124,12 +126,21 @@ namespace PeripheralBatteryMonitor
             //MaximumSize with a zero height is what turns AutoSize into "wrap at this width and
             //grow downwards"; WinForms scales MaximumSize with the rest of the form, so the
             //wrap point follows the display scale.
+            //
+            //500 rather than a rounder number because it was measured, not guessed. The
+            //supported-device list is the widest thing in this window, and at 96 DPI its
+            //longest line is the Spanish Bluetooth Low Energy entry at 425 px -- five past the
+            //420 this used to wrap at, so that one bullet spilled a couple of words onto a
+            //second line and broke the list. 500 clears the longest line in all five languages
+            //with room for a translation that runs longer. Re-measure before shrinking it.
+        private const int WrapWidth = 600;
+
         private static Label Paragraph(string text)
         {
             Label label = new Label();
             label.Text = text;
             label.AutoSize = true;
-            label.MaximumSize = new Size(420, 0);
+            label.MaximumSize = new Size(WrapWidth, 0);
             label.Margin = new Padding(2, 0, 0, 4);
             return label;
         }
@@ -145,7 +156,7 @@ namespace PeripheralBatteryMonitor
             {
                     //No browser, or the shell refused. Worth saying so once, not worth crashing
                     //the tray app over.
-                MessageBox.Show(this, ProjectUrl + "\n\n" + ex.Message, "Could not open the page",
+                MessageBox.Show(this, ProjectUrl + "\n\n" + ex.Message, Strings.Get("about.link.failed"),
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }

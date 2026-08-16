@@ -1,0 +1,71 @@
+# PeripheralBatteryMonitor — Deutsch.
+# Fehlende Zeilen werden auf Englisch angezeigt (siehe en.lang).
+
+@name = Deutsch
+
+app.name = Peripheral Battery Monitor
+
+# ---- Infobereich ----
+tray.settings = Einstellungen
+tray.about = Info
+tray.exit = Beenden
+
+tray.device.known = {0}: {1} %
+tray.device.unknown = {0}: ?
+notify.lowBattery = Akku NIEDRIG bei „{0}“ ({1} %)!
+
+# ---- Fenster „Einstellungen“ ----
+settings.title = Peripheral Battery Monitor
+settings.group.general = Allgemein
+settings.group.devices = Geräte und Symbole
+
+settings.startup = Anwendung beim Start ausführen
+settings.startup.hint = Startet mit Windows, direkt in den Infobereich. Standardmäßig aus.
+
+settings.notifications = Benachrichtigungen aktivieren
+settings.notifications.hint = Zeigt einmal eine Sprechblase, sobald ein Gerät auf 20 % oder weniger fällt – nicht bei jeder Aktualisierung, solange es dort bleibt.
+
+settings.refresh = Aktualisierungsintervall:
+settings.refresh.unit = Min.
+settings.refresh.hint = Wie oft jedes erfasste Gerät abgefragt wird. Zwischen 1 Minute und 24 Stunden.
+
+settings.language = Sprache:
+settings.language.auto = Wie Windows
+settings.language.hint = Wird sofort übernommen. Von einem Gerät gemeldete Namen bleiben, wie das Gerät sie schreibt.
+
+settings.autoDetect = Neue Geräte automatisch erkennen
+settings.autoDetect.hint = Sucht weiterhin nach neu gekoppelten Bluetooth-Geräten. Wenn aus, werden nur beim Start bereits gekoppelte Geräte erfasst. USB-Dongles werden immer erkannt.
+
+settings.oneIconPerDevice = Ein Symbol pro Gerät anzeigen
+settings.oneIconPerDevice.hint = Wenn aus, zeigt ein einzelnes Symbol den niedrigsten Ladestand aller Geräte, und die QuickInfo listet sie einzeln auf.
+
+settings.hideUnknown = Geräte mit unbekanntem Ladestand ausblenden
+settings.hideUnknown.hint = Manche Geräte melden Windows überhaupt keinen Akku. Wenn ein, bleiben sie aus dem Infobereich, der QuickInfo und der Geräteliste heraus.
+
+# ---- Geräteliste ----
+info.column.device = Gerät
+info.column.state = Status
+info.column.battery = Ladestand
+info.state.connected = Verbunden
+info.state.disconnected = Getrennt
+info.lastUpdated = Zuletzt aktualisiert:
+info.never = -
+
+# ---- Info ----
+about.title = Über Peripheral Battery Monitor
+about.version = Version {0}
+about.what = Zeigt den verbleibenden Akkustand Ihrer kabellosen Geräte im Windows-Infobereich an. Das Symbol folgt dem niedrigsten Stand aller erfassten Geräte, und eine Sprechblase erscheint einmal, sobald eines auf 20 % oder weniger fällt.
+about.supported = Unterstützte Geräte
+about.device.ble = Bluetooth Low Energy — Ohrhörer, Fitness-Tracker, BLE-Mäuse und -Tastaturen
+about.device.classic = Bluetooth Classic / BR-EDR — Headsets, AirPods unter Windows
+about.device.apple = Apple Magic Mouse, Trackpad und Keyboard
+about.device.logitech = Logitech-LIGHTSPEED-Geräte am eigenen USB-Dongle
+about.device.steelseries = Kabellose Headsets SteelSeries Arctis Nova 5 / 7
+about.device.razer = Kabellose Razer-Mäuse am HyperSpeed-Dongle oder über Bluetooth
+about.author = von o0Zz — {0}
+about.link.failed = Die Seite konnte nicht geöffnet werden
+
+# ---- Schaltflächen ----
+button.ok = OK
+button.close = Schließen
+button.about = Info...

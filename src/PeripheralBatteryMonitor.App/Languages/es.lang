@@ -1,0 +1,71 @@
+# PeripheralBatteryMonitor — Español.
+# Las líneas que falten aquí se muestran en inglés (véase en.lang).
+
+@name = Español
+
+app.name = Peripheral Battery Monitor
+
+# ---- área de notificación ----
+tray.settings = Configuración
+tray.about = Acerca de
+tray.exit = Salir
+
+tray.device.known = {0}: {1} %
+tray.device.unknown = {0}: ?
+notify.lowBattery = Batería BAJA en «{0}» ({1} %)
+
+# ---- ventana de configuración ----
+settings.title = Peripheral Battery Monitor
+settings.group.general = General
+settings.group.devices = Dispositivos e iconos
+
+settings.startup = Iniciar la aplicación al arrancar
+settings.startup.hint = Se inicia con Windows, directamente en el área de notificación. Desactivado de forma predeterminada.
+
+settings.notifications = Activar las notificaciones
+settings.notifications.hint = Muestra un globo una vez cada vez que un dispositivo baja al 20 % o menos, no en cada actualización mientras siga así.
+
+settings.refresh = Intervalo de actualización:
+settings.refresh.unit = min
+settings.refresh.hint = Con qué frecuencia se consulta cada dispositivo supervisado. Entre 1 minuto y 24 horas.
+
+settings.language = Idioma:
+settings.language.auto = Igual que Windows
+settings.language.hint = Se aplica de inmediato. Los nombres que comunica un dispositivo se mantienen tal como los escribe el dispositivo.
+
+settings.autoDetect = Detectar automáticamente los dispositivos nuevos
+settings.autoDetect.hint = Sigue buscando dispositivos Bluetooth recién emparejados. Si se desactiva, solo se supervisan los ya emparejados al inicio. Los adaptadores USB siempre se detectan.
+
+settings.oneIconPerDevice = Mostrar un icono por dispositivo
+settings.oneIconPerDevice.hint = Si se desactiva, un único icono muestra la carga más baja de todos los dispositivos y su información emergente los enumera uno a uno.
+
+settings.hideUnknown = Ocultar los dispositivos con carga desconocida
+settings.hideUnknown.hint = Algunos dispositivos no comunican ninguna batería a Windows. Si se activa, quedan fuera del área de notificación, de la información emergente y de la lista.
+
+# ---- lista de dispositivos ----
+info.column.device = Dispositivo
+info.column.state = Estado
+info.column.battery = Nivel de batería
+info.state.connected = Conectado
+info.state.disconnected = Desconectado
+info.lastUpdated = Última actualización:
+info.never = -
+
+# ---- Acerca de ----
+about.title = Acerca de Peripheral Battery Monitor
+about.version = Versión {0}
+about.what = Muestra cuánta batería les queda a sus periféricos inalámbricos, en el área de notificación de Windows. El icono sigue el nivel más bajo de todos los dispositivos supervisados y aparece un globo una vez cada vez que uno baja al 20 % o menos.
+about.supported = Dispositivos compatibles
+about.device.ble = Bluetooth Low Energy — auriculares, pulseras de actividad, ratones y teclados BLE
+about.device.classic = Bluetooth Classic / BR-EDR — auriculares, AirPods en Windows
+about.device.apple = Apple Magic Mouse, Trackpad y Keyboard
+about.device.logitech = Dispositivos Logitech LIGHTSPEED con su propio adaptador USB
+about.device.steelseries = Auriculares inalámbricos SteelSeries Arctis Nova 5 / 7
+about.device.razer = Ratones inalámbricos Razer con adaptador HyperSpeed o Bluetooth
+about.author = por o0Zz — {0}
+about.link.failed = No se ha podido abrir la página
+
+# ---- botones ----
+button.ok = Aceptar
+button.close = Cerrar
+button.about = Acerca de...

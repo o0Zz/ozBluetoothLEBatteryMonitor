@@ -48,6 +48,23 @@
     <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Interface languages, one file each. A wildcard rather than a list: adding
+         a language is adding a file to Languages/, and Strings finds it by
+         enumerating what is embedded.
+
+         WithCulture=false is load-bearing. Without it, en.lang and de.lang look
+         exactly like culture-specific resources to MSBuild, which would build them
+         into satellite assemblies in per-culture subfolders — the opposite of the
+         single file this whole project is arranged around, and they would not be
+         found at run time either. -->
+    <EmbeddedResource Include="Languages\*.lang">
+      <!-- Must match Strings.Prefix. -->
+      <LogicalName>PeripheralBatteryMonitor.Languages.%(Filename)%(Extension)</LogicalName>
+      <WithCulture>false</WithCulture>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <!-- WinForms on net48 is wired with classic references. UseWindowsForms is a
        modern-.NET property and does nothing here. -->
   <ItemGroup>

@@ -1,0 +1,71 @@
+# PeripheralBatteryMonitor — Français.
+# Toute ligne absente ici est affichée en anglais (voir en.lang).
+
+@name = Français
+
+app.name = Peripheral Battery Monitor
+
+# ---- icône de la zone de notification ----
+tray.settings = Paramètres
+tray.about = À propos
+tray.exit = Quitter
+
+tray.device.known = {0} : {1} %
+tray.device.unknown = {0} : ?
+notify.lowBattery = Batterie FAIBLE sur « {0} » ({1} %) !
+
+# ---- fenêtre Paramètres ----
+settings.title = Peripheral Battery Monitor
+settings.group.general = Général
+settings.group.devices = Périphériques et icônes
+
+settings.startup = Lancer l'application au démarrage
+settings.startup.hint = Démarre avec Windows, directement dans la zone de notification. Désactivé par défaut.
+
+settings.notifications = Activer les notifications
+settings.notifications.hint = Affiche une infobulle chaque fois qu'un périphérique passe à 20 % ou moins, et non à chaque actualisation tant qu'il y reste.
+
+settings.refresh = Période d'actualisation :
+settings.refresh.unit = min
+settings.refresh.hint = Fréquence d'interrogation de chaque périphérique suivi. Entre 1 minute et 24 heures.
+
+settings.language = Langue :
+settings.language.auto = Comme Windows
+settings.language.hint = Prend effet immédiatement. Les noms signalés par un périphérique restent tels qu'il les écrit.
+
+settings.autoDetect = Détecter automatiquement les nouveaux périphériques
+settings.autoDetect.hint = Continue à surveiller les nouveaux périphériques Bluetooth appairés. Si désactivé, seuls ceux déjà appairés au démarrage sont suivis. Les dongles USB sont toujours détectés.
+
+settings.oneIconPerDevice = Une icône par périphérique
+settings.oneIconPerDevice.hint = Si désactivé, une seule icône affiche le niveau le plus bas de tous les périphériques et son infobulle les énumère.
+
+settings.hideUnknown = Masquer les périphériques dont la batterie est inconnue
+settings.hideUnknown.hint = Certains périphériques ne signalent aucune batterie à Windows. Si activé, ils sont exclus de la zone de notification, de l'infobulle et de la liste.
+
+# ---- liste des périphériques ----
+info.column.device = Périphérique
+info.column.state = État
+info.column.battery = Niveau de batterie
+info.state.connected = Connecté
+info.state.disconnected = Déconnecté
+info.lastUpdated = Dernière mise à jour :
+info.never = -
+
+# ---- À propos ----
+about.title = À propos de Peripheral Battery Monitor
+about.version = Version {0}
+about.what = Affiche la batterie restante de vos périphériques sans fil dans la zone de notification de Windows. L'icône suit le niveau le plus bas de tous les périphériques suivis, et une infobulle apparaît dès que l'un d'eux passe à 20 % ou moins.
+about.supported = Périphériques pris en charge
+about.device.ble = Bluetooth Low Energy — écouteurs, bracelets connectés, souris et claviers BLE
+about.device.classic = Bluetooth Classic / BR-EDR — casques, AirPods sous Windows
+about.device.apple = Apple Magic Mouse, Trackpad et Keyboard
+about.device.logitech = Périphériques Logitech LIGHTSPEED sur leur propre dongle USB
+about.device.steelseries = Casques sans fil SteelSeries Arctis Nova 5 / 7
+about.device.razer = Souris sans fil Razer sur dongle HyperSpeed ou Bluetooth
+about.author = par o0Zz — {0}
+about.link.failed = Impossible d'ouvrir la page
+
+# ---- boutons ----
+button.ok = OK
+button.close = Fermer
+button.about = À propos...

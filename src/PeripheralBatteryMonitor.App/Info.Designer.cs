@@ -41,9 +41,8 @@ namespace PeripheralBatteryMonitor
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripStatusLabel2});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 142);
+            this.statusStrip1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(416, 26);
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -62,9 +61,16 @@ namespace PeripheralBatteryMonitor
             // listView1
             // 
             this.listView1.HideSelection = false;
-            this.listView1.Location = new System.Drawing.Point(0, -3);
+            // Docked, not placed. This used to be pinned at (0,-3) with a fixed 416x143 --
+            // the negative Y hid its top border and the height was hand-fitted to leave room
+            // for the status strip, landing 2 px short of it. Neither survives the window
+            // being resized, because a control with no Dock and no Anchor simply does not
+            // move. Fill also removes the gap and the need for the offset.
+            this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            // No border: the list is the whole window here, so a sunken frame inside a frame
+            // reads as a mistake. This is what the -3 offset was approximating.
+            this.listView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(416, 143);
             this.listView1.TabIndex = 1;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -79,8 +85,13 @@ namespace PeripheralBatteryMonitor
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(416, 168);
             this.ControlBox = false;
+            // Fill first, Bottom second: docking is applied from the highest index down, so
+            // the status strip claims its band and the list takes what is left.
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.statusStrip1);
+            // Small enough to be useful, large enough that the two fixed columns plus a
+            // readable device column still fit. Scaled with the rest of the form.
+            this.MinimumSize = new System.Drawing.Size(320, 140);
             this.Icon = global::PeripheralBatteryMonitor.Properties.Resources.Icon_Battery_100;
             this.Name = "Info";
             this.Activated += new System.EventHandler(this.Info_Activated);

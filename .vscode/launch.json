@@ -10,7 +10,7 @@
       // written next to it, so bin\Debug\net48 holds the exe and its .pdb alone.
       // Stepping into Core still works: the Core .pdb is portable and referenced
       // from the embedded image.
-      "name": "Debug PeripheralBatteryMonitor (.NET Framework)",
+      "name": "PeripheralBatteryMonitor (.NET Framework)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build (Debug)",

@@ -1,4 +1,4 @@
-﻿using PeripheralBatteryMonitor;
+using PeripheralBatteryMonitor;
 using System;
 using System.Collections.Concurrent;
 using System.Windows.Forms;
@@ -17,6 +17,22 @@ namespace PeripheralBatteryMonitor
             this.hideUnknownBattery = hideUnknownBattery;
         }
 
+        /// <summary>
+        /// Pushes the current language onto this window. Called by Settings when the picker
+        /// changes, because this popup is created once and kept for the whole session.
+        /// The rows themselves are rebuilt on every Activated, so only the chrome needs it.
+        /// </summary>
+        internal void ApplyStrings()
+        {
+            if (listView1.Columns.Count == 3)
+            {
+                listView1.Columns[0].Text = Strings.Get("info.column.device");
+                listView1.Columns[1].Text = Strings.Get("info.column.state");
+                listView1.Columns[2].Text = Strings.Get("info.column.battery");
+            }
+            toolStripStatusLabel1.Text = Strings.Get("info.lastUpdated") + " ";
+        }
+
             //Columns are built here rather than in the constructor because ListView
             //columns are the one thing AutoScaleMode.Font does not scale: their widths
             //are plain integers the control never revisits. By OnLoad the form has been
@@ -30,9 +46,44 @@ namespace PeripheralBatteryMonitor
                 return;
 
             int fixedColumn = Scale(100);
-            listView1.Columns.Add("Device", listView1.ClientSize.Width - (2 * fixedColumn) - Scale(5));
-            listView1.Columns.Add("State", fixedColumn);
-            listView1.Columns.Add("Battery Level", fixedColumn);
+            listView1.Columns.Add(Strings.Get("info.column.device"), fixedColumn);
+            listView1.Columns.Add(Strings.Get("info.column.state"), fixedColumn);
+            listView1.Columns.Add(Strings.Get("info.column.battery"), fixedColumn);
+
+            ApplyStrings();
+
+                //Docking resizes the control but not its columns -- a ListView column width is
+                //a plain integer it never revisits, the same reason these are scaled by hand in
+                //the first place. So re-flow them whenever the control's width changes, which
+                //covers both the initial layout and every drag of the window border.
+            listView1.ClientSizeChanged += delegate { LayoutColumns(); };
+            LayoutColumns();
+        }
+
+        /// <summary>
+        /// Gives the two fixed columns a scaled width and lets the device name absorb whatever
+        /// is left, so the list always spans the window exactly.
+        /// </summary>
+        private void LayoutColumns()
+        {
+            if (listView1.Columns.Count != 3)
+                return;
+
+            int fixedColumn = Scale(100);
+
+                //ClientSize already excludes a vertical scrollbar when one is showing. The
+                //extra pixel keeps the total just inside the client area, because a device
+                //column sized to the exact remainder produces a horizontal scrollbar.
+            int device = listView1.ClientSize.Width - (2 * fixedColumn) - 1;
+
+                //A window dragged narrow must not produce a negative width, which throws.
+            int minimum = Scale(60);
+            if (device < minimum)
+                device = minimum;
+
+            listView1.Columns[0].Width = device;
+            listView1.Columns[1].Width = fixedColumn;
+            listView1.Columns[2].Width = fixedColumn;
         }
 
             //96 is the DPI the designer laid this form out at -- see AutoScaleDimensions.
@@ -80,8 +131,10 @@ namespace PeripheralBatteryMonitor
                 {
                     Text = device.GetName()
                 };
-                listViewItem.SubItems.Add(device.IsConnected() ? "Connected" : "Disconnected");
-                listViewItem.SubItems.Add(device.GetBatteryLevel() + "%");
+                listViewItem.SubItems.Add(Strings.Get(device.IsConnected()
+                    ? "info.state.connected" : "info.state.disconnected"));
+                listViewItem.SubItems.Add(theBatteryLevel < 0
+                    ? "?" : theBatteryLevel + "%");
                 listViewItem.Tag = device;
                 listView1.Items.Add(listViewItem);
 
@@ -89,7 +142,9 @@ namespace PeripheralBatteryMonitor
 
             listView1.EndUpdate();
 
-            toolStripStatusLabel2.Text = lastUpdated.ToString();
+            toolStripStatusLabel2.Text = lastUpdated.HasValue
+                ? lastUpdated.Value.ToString()
+                : Strings.Get("info.never");
         }
     }
 }

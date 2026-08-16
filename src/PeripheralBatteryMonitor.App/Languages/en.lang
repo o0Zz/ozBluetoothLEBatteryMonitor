@@ -1,0 +1,78 @@
+# PeripheralBatteryMonitor — English. The master file: every other language falls
+# back to this one key by key, so a line missing elsewhere shows in English rather
+# than showing its key.
+#
+# Format: one "key = value" per line, # for a comment, \n for a line break.
+# Everything after the first = is the text, so = needs no escaping.
+# @name is the language's name for itself, shown in the Settings picker.
+
+@name = English
+
+app.name = Peripheral Battery Monitor
+
+# ---- tray icon ----
+tray.settings = Settings
+tray.about = About
+tray.exit = Exit
+
+# {0} device name, {1} battery percentage
+tray.device.known = {0}: {1}%
+tray.device.unknown = {0}: ?
+notify.lowBattery = Battery LOW on '{0}' ({1}%) !
+
+# ---- Settings window ----
+settings.title = Peripheral Battery Monitor
+settings.group.general = General
+settings.group.devices = Devices and tray icons
+
+settings.startup = Launch application on startup
+settings.startup.hint = Start with Windows, straight into the tray. Off by default.
+
+settings.notifications = Enable notifications
+settings.notifications.hint = Show a balloon once each time a device drops to 20% or below, not on every refresh while it stays there.
+
+settings.refresh = Refresh period:
+settings.refresh.unit = min
+settings.refresh.hint = How often every tracked device is polled. Between 1 minute and 24 hours.
+
+settings.language = Language:
+settings.language.auto = Same as Windows
+settings.language.hint = Applies straight away. Names reported by a device stay as the device spells them.
+
+settings.autoDetect = Automatically detect new devices
+settings.autoDetect.hint = Keep watching for newly paired Bluetooth devices. When off, only devices already paired at startup are tracked. USB dongles are always picked up.
+
+settings.oneIconPerDevice = Show one tray icon per device
+settings.oneIconPerDevice.hint = When off, one icon shows the lowest battery of all devices and its tooltip lists each one.
+
+settings.hideUnknown = Hide devices with unknown battery level
+settings.hideUnknown.hint = Some devices report no battery to Windows at all. When on, they are left out of the tray, the tooltip and the device list.
+
+# ---- device list popup ----
+info.column.device = Device
+info.column.state = State
+info.column.battery = Battery level
+info.state.connected = Connected
+info.state.disconnected = Disconnected
+info.lastUpdated = Last updated:
+info.never = -
+
+# ---- About box ----
+about.title = About Peripheral Battery Monitor
+about.version = Version {0}
+about.what = Shows how much battery your wireless peripherals have left, in the Windows system tray. The icon follows the lowest level across every tracked device, and a balloon notification fires once each time one drops to 20% or below.
+about.supported = Supported devices
+about.device.ble = Bluetooth Low Energy — earbuds, fitness bands, BLE mice and keyboards
+about.device.classic = Bluetooth Classic / BR-EDR — headsets, AirPods on Windows
+about.device.apple = Apple Magic Mouse, Trackpad and Keyboard
+about.device.logitech = Logitech LIGHTSPEED devices on their own USB dongle
+about.device.steelseries = SteelSeries Arctis Nova 5 / 7 wireless headsets
+about.device.razer = Razer wireless mice on a HyperSpeed dongle or Bluetooth
+# {0} the project URL
+about.author = by o0Zz — {0}
+about.link.failed = Could not open the page
+
+# ---- buttons ----
+button.ok = OK
+button.close = Close
+button.about = About...

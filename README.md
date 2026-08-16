@@ -10,6 +10,7 @@ It supports :
   - **Bluetooth Classic (BR/EDR)** devices (older headsets, gaming headsets, AirPods on Windows)
   - **Apple magic mice/trackpads/keyboards** devices
   - **Logitech LIGHTSPEED** devices (PRO X Wireless headset, ...)
+  - **Razer** wireless mice (Viper Ultimate, DeathAdder V2/V3/V4 Pro, Basilisk V3 Pro, Orochi V2, ...)
   - **SteelSeries Arctis Nova** wireless headsets (Nova 5/5X, Nova 7/7P/7X and editions) — *device ids taken from [HeadsetControl](https://github.com/Sapd/HeadsetControl)'s tables, not yet confirmed on hardware; please [open an issue](https://github.com/o0Zz/PeripheralBatteryMonitor/issues) if yours reads a wrong level.*
 
 **Notifications**
@@ -23,6 +24,9 @@ Configure how often the app polls battery levels (1 min – 24 h).
 
 **One tray icon per device**
 Optionally show a separate tray icon for every paired device instead of one aggregate icon for the lowest battery. Each icon displays its own battery glyph and tooltip.
+
+**Multiple languages**
+English, French, German, Italian and Spanish. The app follows Windows by default; pick a language explicitly in Settings and it applies straight away.
 
 **Hide unknown-battery devices**
 Optionally hide devices whose battery cannot be read from the tray, balloon tooltip and Info popup.
@@ -57,6 +61,9 @@ When the application is running, right-click the battery icon in the system tray
 
 - [x] **Refresh period [5 min default]**
   - How often the application polls battery levels for every tracked device, from 1 minute to 24 hours.
+
+- [x] **Language [same as Windows by default]**
+  - English, French, German, Italian or Spanish. Applies immediately — no restart.
 
 **Devices and tray icons**
 
