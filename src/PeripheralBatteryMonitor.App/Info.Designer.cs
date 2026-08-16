@@ -1,4 +1,4 @@
-﻿namespace PeripheralBatteryMonitor
+namespace PeripheralBatteryMonitor
 {
     partial class Info
     {
@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Info));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -82,7 +81,7 @@
             this.ControlBox = false;
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.statusStrip1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Icon = global::PeripheralBatteryMonitor.Properties.Resources.Icon_Battery_100;
             this.Name = "Info";
             this.Activated += new System.EventHandler(this.Info_Activated);
             this.Deactivate += new System.EventHandler(this.Info_Deactivate);

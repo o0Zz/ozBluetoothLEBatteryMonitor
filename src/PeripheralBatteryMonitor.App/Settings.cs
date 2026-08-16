@@ -3,7 +3,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace PeripheralBatteryMonitor
@@ -53,10 +52,6 @@ namespace PeripheralBatteryMonitor
 
             UpdateIcon();
 
-                //Display the build version (CI patches AssemblyVersion via git describe)
-            string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            label1.Text = String.Format("v{0} - by o0Zz (https://github.com/o0zz)", version);
-
             isInitializing = false;
         }
 
@@ -64,11 +59,6 @@ namespace PeripheralBatteryMonitor
         {
             base.SetVisibleCore(UserShow ? value : false);
             UserShow = false;
-        }
-
-        private void DeviceListForm_Load(object sender, EventArgs e)
-        {
-
         }
 
         private void DeviceListForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -167,7 +157,28 @@ namespace PeripheralBatteryMonitor
             if (theLowestBattery > 0)
                 NotifyIcon.Icon = GetIconForBatteryLevel(theLowestBattery);
 
-            NotifyIcon.Text = theBalloonText.Substring(0, Math.Min(theBalloonText.Length, 64));
+            NotifyIcon.Text = FitTooltip(theBalloonText);
+        }
+
+            //NotifyIcon.Text is a 64-character buffer *including* the terminator, so 63 is
+            //the most WinForms accepts -- it throws ArgumentOutOfRangeException at 64, which
+            //on the polling tick is an unhandled exception that kills the tray app. The old
+            //Math.Min(length, 64) was off by exactly one and fired as soon as enough devices
+            //were paired for their names to fill the tooltip.
+        private const int TooltipLimit = 63;
+
+            //The aggregate tooltip is one device per line, so drop whole lines before cutting
+            //inside one: "Logi M650 L: 80%" truncated mid-name reads as a different device.
+        private static string FitTooltip(string text)
+        {
+            if (text.Length <= TooltipLimit)
+                return text;
+
+            int lastLine = text.LastIndexOf('\n', TooltipLimit - 2);
+            if (lastLine > 0)
+                return text.Substring(0, lastLine) + "\n…";
+
+            return text.Substring(0, TooltipLimit - 1) + "…";
         }
 
         private void UpdateIconPerDevice(ConcurrentDictionary<string, BatteryDevice> deviceDict)
@@ -196,7 +207,7 @@ namespace PeripheralBatteryMonitor
                 string tooltip = (level < 0)
                     ? String.Format("{0}: ?", name)
                     : String.Format("{0}: {1}%", name, level);
-                icon.Text = tooltip.Substring(0, Math.Min(tooltip.Length, 64));
+                icon.Text = FitTooltip(tooltip);
 
                 NotifyLowBattery(kv.Key, name, level);
             }
@@ -266,6 +277,32 @@ namespace PeripheralBatteryMonitor
         {
             UserShow = true;
             Show();
+            Activate();
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowAbout();
+        }
+
+        private void buttonAbout_Click(object sender, EventArgs e)
+        {
+            ShowAbout();
+        }
+
+        private void buttonClose_Click(object sender, EventArgs e)
+        {
+                //Hide rather than Close: closing is what exiting means here, and
+                //DeviceListForm_FormClosing would only cancel it and hide anyway.
+            Hide();
+        }
+
+        private void ShowAbout()
+        {
+                //No owner: this form is usually hidden by SetVisibleCore, and ShowDialog
+                //refuses an invisible owner outright.
+            using (AboutForm about = new AboutForm())
+                about.ShowDialog();
         }
 
         private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)

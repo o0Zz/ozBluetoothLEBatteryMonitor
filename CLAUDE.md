@@ -32,10 +32,10 @@ src/PeripheralBatteryMonitor.Core/   net48 — discovery and battery reading. ZE
   Battery/Core/                      abstractions only
   Battery/Hid/                       vendor-neutral raw HID plumbing
   Battery/Providers/                 one folder per device family + the two registries
-src/PeripheralBatteryMonitor.App/    net48 — WinForms tray icon and two windows
-  Program.cs, Settings.cs, Info.cs, EmbeddedAssemblies.cs
+src/PeripheralBatteryMonitor.App/    net48 — WinForms tray icon and three windows
+  Program.cs, Settings.cs, Info.cs, AboutForm.cs, EmbeddedAssemblies.cs
   app.manifest                       DPI awareness and the execution level
-  Properties/Resources.resx          the five tray icons
+  Properties/Resources.resx          the five tray icons — the only .resx with content
   Resources/                         the .ico files those entries point at
 ```
 
@@ -52,6 +52,22 @@ Both projects use root namespace `PeripheralBatteryMonitor`, so the App does not
 - **Every form needs `AutoScaleMode.Font` and a matching `AutoScaleDimensions`.** `Info` had neither, which meant `AutoScaleMode.None`: it kept its design-time pixel size while the font grew with the scale, so the rows were clipped. Both forms now declare the 96 DPI baseline `(6F, 13F)`.
 - **`ListView` column widths do not auto-scale** — they are plain integers the control never revisits. `Info.OnLoad` scales them by `DeviceDpi / 96`, and it has to be `OnLoad` rather than the constructor, because auto-scaling has not happened yet when the constructor runs.
 
+## Windows
+
+Three, plus the tray icon and its context menu (Settings / About / Exit).
+
+- **`Settings`** — the main form, and the tray host. It owns `NotifyIcon`, `IconTimer` and the context menu, and is kept hidden by `SetVisibleCore` unless the user asked for it. Two group boxes, *General* and *Devices and tray icons*, each setting followed by a `GrayText` hint line; a bottom strip with *About…* and *Close*. **There is no OK/Cancel**: every setting is written to `HKCU` in its own `CheckedChanged` handler the moment it changes, so there is nothing pending for a Cancel to discard, and *Close* only hides the window.
+- **`Info`** — the per-device list, shown by double-clicking the tray icon.
+- **`AboutForm`** — version, what the app does, and the device families it can read. Built in code rather than from a designer file, so it has no `.resx`. Shown with no owner, because the owner would be the hidden `Settings` form and `ShowDialog` refuses an invisible owner.
+
+**Lay these out with panels, not coordinates.** `Settings` is a `TableLayoutPanel` of two `GroupBox`es, each holding a top-down `FlowLayoutPanel`; every hint is an `AutoSize` label with `MaximumSize = (400, 0)` so it wraps and grows downwards. The form itself is `AutoSize` — the height that fits depends on where those labels wrap, which depends on the display scale, so the only version that is right at both 100% and 150% is the one that asks its own contents. A fixed `ClientSize` here clips at the bottom.
+
+A docked child's position depends on z-order, not on the order it was written: docking is applied from the **highest** index down, so a `Dock = Fill` panel must be added to `Controls` *before* the `Dock = Bottom` button strip to end up laid out last and take what is left.
+
+**`NotifyIcon.Text` holds 63 characters, not 64.** The buffer is 64 including its terminator and WinForms throws `ArgumentOutOfRangeException` at 64 — on the polling tick, which makes it an unhandled exception that kills the tray app. `Settings.FitTooltip` is the only thing that may assign it: it drops whole lines before cutting inside one, because the aggregate tooltip is one device per line and a name cut in half reads as a different device. This fired in practice with four paired devices.
+
+Both forms take their icon from `Properties.Resources.Icon_Battery_100` rather than from a per-form `$this.Icon` blob in their `.resx`. The `.resx` copies were the same artwork three times over, ~12 KB of base64 each, and lacked the hand-tuned 16 px frame the `.ico` carries — so the title bar was downsampling a 256 px PNG. `Settings.resx` and `Info.resx` now hold no resources at all, only designer metadata.
+
 ## Architecture
 
 The app is a **single-form WinForms tray application**. The form is created but kept hidden — `Settings.SetVisibleCore` suppresses visibility unless the user explicitly opens it from the tray menu. The form's job is to host the `NotifyIcon` and a `Timer` that drives polling.
@@ -59,7 +75,7 @@ The app is a **single-form WinForms tray application**. The form is created but 
 Three layers, all in namespace `PeripheralBatteryMonitor`; the first two are the App project, the third is Core:
 
 1. **`Program.cs`** — entry point; installs `EmbeddedAssemblies` and then runs `Application.Run(new Settings())`.
-2. **UI** — `Settings` (main form + tray host) and `Info` (per-device list dialog). `Settings.UpdateIcon()` is the polling tick: it calls `deviceManager.refreshHidDevices()` (the HID sources have no watcher, so the tick is what picks up a plugged/unplugged dongle), then `device.UpdateBatteryLevel()` on every tracked device, picks the lowest battery level across all devices, maps that to one of five tray icons (`Icon_Battery_20/40/60/80/100`), updates the tooltip, and fires a balloon notification once per low-battery transition (`lowBatteryNotificationDone` latch resets when level rises above 20%). An `updatingIcon` latch makes it non-re-entrant: HID discovery reports new devices *synchronously*, and `OnNewDevice` calls back into `UpdateIcon`.
+2. **UI** — see **Windows** above. `Settings.UpdateIcon()` is the polling tick: it calls `deviceManager.refreshHidDevices()` (the HID sources have no watcher, so the tick is what picks up a plugged/unplugged dongle), then `device.UpdateBatteryLevel()` on every tracked device, picks the lowest battery level across all devices, maps that to one of five tray icons (`Icon_Battery_20/40/60/80/100`), updates the tooltip, and fires a balloon notification once per low-battery transition (`lowBatteryNotificationDone` latch resets when level rises above 20%). An `updatingIcon` latch makes it non-re-entrant: HID discovery reports new devices *synchronously*, and `OnNewDevice` calls back into `UpdateIcon`.
 3. **`PeripheralBatteryMonitor.Core`** — discovery and battery reading, one type per file:
    - `IDeviceNotification.cs` — the UI callback contract; exposes `OnNewDevice` and `OnDeviceRemoved`.
    - `DeviceManager.cs` (`DeviceManager`) runs **two** `DeviceInformation.CreateWatcher` instances in parallel: one for BLE (protocol GUID `{bb7bb05e-5972-42b5-94fc-76eaa7084d49}`) and one for Bluetooth Classic / BR-EDR (`{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}`). Both feed the same `ConcurrentDictionary<string, BatteryDevice>` keyed by `devInfo.Id`, each device tagged with a `DeviceTransport` (`BluetoothLowEnergy` / `BluetoothClassic`). Only **paired** devices (`devInfo.Pairing.IsPaired`) are tracked. The watcher's `Updated` handler does two things: removes the device if `System.Devices.Aep.IsPaired` flips to false, and forwards property bag changes into the cached `BatteryDevice` via `UpdateProperties`. `Removed` removes the device. `scanForEver` restarts each watcher in its `Stopped` handler for continuous discovery. `refreshHidDevices()` is the **second, non-Bluetooth source**: it reconciles `DeviceTransport.UsbHid` entries against a fresh `HidDeviceSource.Discover()` snapshot (add newly present, remove vanished, never touch Bluetooth entries). `scan()` deliberately does *not* call it — see the re-entrancy note in `UpdateIcon` above; the poll tick is the single driver.

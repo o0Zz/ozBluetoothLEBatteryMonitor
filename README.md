@@ -35,7 +35,7 @@ Follow the directions below to get started!
 
 **Step 3.** Open the system tray overflow popup and locate the battery icon. Drag it to the visible tray area if you want it always shown.
 
-**Step 4.** Double-click the icon to see the per-device list, or right-click for *Settings* / *Exit*.
+**Step 4.** Double-click the icon to see the per-device list, or right-click for *Settings* / *About* / *Exit*.
 
 *Auto-start is off by default — enable it in Settings if you want the app to launch with Windows.*
 
@@ -46,23 +46,27 @@ When the application is running, right-click the battery icon in the system tray
 
 ### Settings Breakdown
 
+**General**
+
 - [ ] **Launch application on startup**
   - *[Off by default]* Boot the application automatically when Windows starts.
 
 - [x] **Enable notifications**
   - When a device drops below 20%, a balloon notification is shown (once per low-battery transition).
 
-- [x] **Automatically detect new devices (If unchecked, detect device only during startup)**
-  - When checked, the app keeps watching for newly paired devices. When unchecked, it only enumerates devices that were already paired when the app started.
+- [x] **Refresh period [5 min default]**
+  - How often the application polls battery levels for every tracked device, from 1 minute to 24 hours.
+
+**Devices and tray icons**
+
+- [x] **Automatically detect new devices**
+  - When checked, the app keeps watching for newly paired Bluetooth devices. When unchecked, it only enumerates devices that were already paired when the app started. Devices on a USB dongle are picked up either way.
 
 - [ ] **Show one tray icon per device**
   - *[Off by default]* When checked, each paired device gets its own tray icon with its own battery glyph and tooltip. When unchecked, a single tray icon shows the lowest battery across all devices and a multi-line tooltip listing each device.
 
 - [ ] **Hide devices with unknown battery level**
   - *[Off by default]* When checked, devices whose battery can't be read (showing `?` / `-1%`) are hidden from the tray icons, the balloon tooltip and the Info popup.
-
-- [x] **Refresh period [5 min default]**
-  - How often the application polls battery levels for every tracked device.
 
 ## 🔧Troubleshooting🔧
 
