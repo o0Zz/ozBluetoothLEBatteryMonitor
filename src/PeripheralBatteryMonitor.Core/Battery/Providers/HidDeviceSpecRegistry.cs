@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using PeripheralBatteryMonitor.Battery.Hid;
 using PeripheralBatteryMonitor.Battery.Providers.Logitech;
+using PeripheralBatteryMonitor.Battery.Providers.SteelSeries;
 
 namespace PeripheralBatteryMonitor.Battery.Providers
 {
@@ -21,7 +22,8 @@ namespace PeripheralBatteryMonitor.Battery.Providers
 
         static HidDeviceSpecRegistry()
         {
-            Register(LogitechBatteryProvider.HidSpec);   //Logitech LIGHTSPEED (PRO X Wireless headset)
+            Register(LogitechBatteryProvider.HidSpec);      //Logitech LIGHTSPEED (PRO X Wireless headset)
+            Register(SteelSeriesBatteryProvider.HidSpec);   //SteelSeries Arctis Nova 5 / 7 dongles
         }
 
         /// <summary>Add a spec. Do this before the first scan for it to take effect.</summary>

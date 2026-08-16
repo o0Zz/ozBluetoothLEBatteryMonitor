@@ -91,10 +91,10 @@ namespace PeripheralBatteryMonitor.Battery.Providers.Logitech
                 return null;
 
             int vendorId;
-            if (!TryGetInt(ctx, DeviceProperties.PROP_HID_VENDOR_ID, out vendorId) || vendorId != LOGITECH_VENDOR_ID)
+            if (!ProviderHid.TryGetInt(ctx, DeviceProperties.PROP_HID_VENDOR_ID, out vendorId) || vendorId != LOGITECH_VENDOR_ID)
                 return null;
 
-            HidInterfaceInfo info = DescribeFromProperties(ctx);
+            HidInterfaceInfo info = ProviderHid.DescribeFromProperties(ctx);
             if (info == null)
                 return null;
 
@@ -237,46 +237,6 @@ namespace PeripheralBatteryMonitor.Battery.Providers.Logitech
             Debug.WriteLine("[Logitech] '" + ctx.DeviceName + "' " + millivolts + "mV -> " + percent
                 + "% (feature 0x" + featureId.ToString("X4") + ", flags=0x" + reply[6].ToString("X2") + ")");
             return percent;
-        }
-
-        /// <summary>
-        /// Rebuild the HID interface descriptor from what the discovery layer cached in the
-        /// property bag, so reading a device costs no re-enumeration.
-        /// </summary>
-        private static HidInterfaceInfo DescribeFromProperties(IBatteryDeviceContext ctx)
-        {
-            object path;
-            if (!ctx.TryGetProperty(DeviceProperties.PROP_HID_PATH, out path) || path == null)
-                return null;
-
-            int inputLength, outputLength;
-            if (!TryGetInt(ctx, DeviceProperties.PROP_HID_INPUT_REPORT_LENGTH, out inputLength))
-                return null;
-            if (!TryGetInt(ctx, DeviceProperties.PROP_HID_OUTPUT_REPORT_LENGTH, out outputLength))
-                return null;
-
-            HidInterfaceInfo info = new HidInterfaceInfo();
-            info.Path = path.ToString();
-            info.InputReportByteLength = inputLength;
-            info.OutputReportByteLength = outputLength;
-            return info;
-        }
-
-        private static bool TryGetInt(IBatteryDeviceContext ctx, string key, out int value)
-        {
-            value = 0;
-            object raw;
-            if (!ctx.TryGetProperty(key, out raw) || raw == null)
-                return false;
-            try
-            {
-                value = Convert.ToInt32(raw);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
     }
 }

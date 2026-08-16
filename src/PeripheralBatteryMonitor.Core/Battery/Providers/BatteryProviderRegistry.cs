@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using PeripheralBatteryMonitor.Battery.Core;
 using PeripheralBatteryMonitor.Battery.Providers.Logitech;
+using PeripheralBatteryMonitor.Battery.Providers.SteelSeries;
 
 namespace PeripheralBatteryMonitor.Battery.Providers
 {
@@ -24,6 +25,7 @@ namespace PeripheralBatteryMonitor.Battery.Providers
             Register(() => new BluetoothBatteryProvider());       //2. Battery level published by Windows
             Register(() => new AppleBatteryProvider());           //3. Apple Magic HID report 0x90
             Register(() => new LogitechBatteryProvider());        //4. Logitech HID++ (USB HID only)
+            Register(() => new SteelSeriesBatteryProvider());     //5. SteelSeries Arctis Nova (USB HID only)
         }
 
         /// <summary>Append a provider factory. Later registrations have lower priority.</summary>

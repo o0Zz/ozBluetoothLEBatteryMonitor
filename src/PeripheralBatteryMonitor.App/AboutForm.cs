@@ -24,6 +24,7 @@ namespace PeripheralBatteryMonitor
             "Bluetooth Classic / BR-EDR — headsets, AirPods on Windows",
             "Apple Magic Mouse, Trackpad and Keyboard",
             "Logitech LIGHTSPEED devices on their own USB dongle",
+            "SteelSeries Arctis Nova 5 / 7 wireless headsets",
         };
 
         internal AboutForm()
