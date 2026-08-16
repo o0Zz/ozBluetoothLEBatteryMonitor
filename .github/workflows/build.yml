@@ -18,6 +18,7 @@ jobs:
     env:
       SOLUTION: PeripheralBatteryMonitor.sln
       CONFIGURATION: Release
+      OUTPUT_DIR: src/PeripheralBatteryMonitor.App/bin/Release/net48
 
     steps:
       - name: Checkout
@@ -25,11 +26,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2
+      # Both projects are SDK-style; Microsoft.NETFramework.ReferenceAssemblies
+      # supplies the net48 reference assemblies, so no MSBuild/nuget.exe setup and
+      # no targeting pack are needed.
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
       - name: Compute version from git
         id: version
@@ -52,31 +55,46 @@ jobs:
           Write-Host "Computed version: $version"
           "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Patch AssemblyVersion and AssemblyFileVersion
+      - name: Restore
+        run: dotnet restore $env:SOLUTION
+
+      # There is no AssemblyInfo.cs to patch any more -- the SDK generates the
+      # assembly attributes, so the version is passed in as a property. The Settings
+      # form prints AssemblyVersion, which is why all three are set.
+      - name: Build
+        run: >
+          dotnet build $env:SOLUTION
+          -c $env:CONFIGURATION
+          --no-restore
+          -p:AssemblyVersion=${{ steps.version.outputs.version }}
+          -p:FileVersion=${{ steps.version.outputs.version }}
+          -p:Version=${{ steps.version.outputs.version }}
+
+      # PeripheralBatteryMonitor.Core.dll is embedded in the exe by the
+      # EmbedReferencedAssemblies target, so the output folder must hold exactly one
+      # executable and nothing else. Catching a regression here is cheaper than
+      # shipping a release that needs a DLL beside it.
+      - name: Verify single-file output
         shell: pwsh
         run: |
-          $file = "PeripheralBatteryMonitor/Properties/AssemblyInfo.cs"
-          $content = Get-Content $file
-          $content = $content -replace 'AssemblyVersion\("[^"]*"\)', 'AssemblyVersion("${{ steps.version.outputs.version }}")'
-          $content = $content -replace 'AssemblyFileVersion\("[^"]*"\)', 'AssemblyFileVersion("${{ steps.version.outputs.version }}")'
-          $content | Set-Content $file
-
-      - name: Restore NuGet packages
-        run: nuget restore $env:SOLUTION
-
-      - name: Build
-        run: msbuild $env:SOLUTION /p:Configuration=$env:CONFIGURATION /p:Platform="Any CPU" /m
+          $stray = Get-ChildItem $env:OUTPUT_DIR -File |
+                   Where-Object { $_.Extension -notin '.exe', '.pdb' }
+          if ($stray) {
+            Write-Host "::error::Unexpected files beside the exe: $($stray.Name -join ', ')"
+            exit 1
+          }
+          Get-ChildItem $env:OUTPUT_DIR -File | Format-Table Name, Length
 
       - name: Upload build artifact
         if: github.ref_type != 'tag'
         uses: actions/upload-artifact@v4
         with:
           name: PeripheralBatteryMonitor-${{ steps.version.outputs.version }}
-          path: PeripheralBatteryMonitor/bin/Release/*
+          path: src/PeripheralBatteryMonitor.App/bin/Release/net48/*
 
       - name: Package release zip
         if: github.ref_type == 'tag'
-        run: Compress-Archive -Path PeripheralBatteryMonitor/bin/Release/* -DestinationPath PeripheralBatteryMonitor-${{ github.ref_name }}.zip
+        run: Compress-Archive -Path src/PeripheralBatteryMonitor.App/bin/Release/net48/* -DestinationPath PeripheralBatteryMonitor-${{ github.ref_name }}.zip
 
       - name: Draft GitHub Release
         if: github.ref_type == 'tag'
@@ -87,4 +105,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: |
             PeripheralBatteryMonitor-${{ github.ref_name }}.zip
-            PeripheralBatteryMonitor/bin/Release/PeripheralBatteryMonitor.exe
+            src/PeripheralBatteryMonitor.App/bin/Release/net48/PeripheralBatteryMonitor.exe

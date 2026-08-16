@@ -1,4 +1,22 @@
+## Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+artifacts/
+publish/
+
+## Visual Studio / Rider / VS Code
 .vs/
-Debug/
-Release/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+
+## NuGet
+*.nupkg
+*.snupkg
 packages/

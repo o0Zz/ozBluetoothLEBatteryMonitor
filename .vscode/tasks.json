@@ -2,38 +2,36 @@
   "version": "2.0.0",
   "tasks": [
     {
-      // Restores NuGet packages into ../packages (only needed on a fresh clone).
-      "label": "nuget restore",
-      "type": "process",
-      "command": "C:\\tools\\nuget.exe",
-      "args": [
-        "restore",
-        "${workspaceFolder}\\PeripheralBatteryMonitor.sln"
-      ],
-      "problemMatcher": []
-    },
-    {
-      // Needs Visual Studio MSBuild -- the legacy ToolsVersion=15 csproj can't be built
-      // with `dotnet build`, and the .NET Framework MSBuild in C:\Windows silently falls
-      // back to ToolsVersion 4.0 (C# 5 compiler).
-      //
-      // MSBuild.exe is located with vswhere rather than hardcoded, because its path moves
-      // with every VS version and edition. -prerelease is required: without it, Insiders
-      // and Preview installs are not reported at all, and vswhere prints nothing --
-      // indistinguishable from "no Visual Studio installed". vswhere itself ships with the
-      // VS Installer and is always under Program Files (x86), even on 64-bit Windows.
+      // Both projects are SDK-style and Microsoft.NETFramework.ReferenceAssemblies
+      // supplies the net48 reference assemblies, so the plain .NET SDK builds this
+      // repo -- no Visual Studio, no targeting pack, no nuget.exe, no vswhere.
       "label": "build (Debug)",
       "type": "process",
-      "command": "powershell.exe",
+      "command": "dotnet",
       "args": [
-        "-NoProfile",
-        "-Command",
-        "& (& 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe' -latest -prerelease -find 'MSBuild\\**\\Bin\\MSBuild.exe' | Select-Object -First 1) '${workspaceFolder}\\PeripheralBatteryMonitor.sln' /p:Configuration=Debug /v:minimal /nologo; exit $LASTEXITCODE"
+        "build",
+        "${workspaceFolder}\\PeripheralBatteryMonitor.sln",
+        "-v:m",
+        "-nologo"
       ],
       "group": {
         "kind": "build",
         "isDefault": true
       },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build (Release)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}\\PeripheralBatteryMonitor.sln",
+        "-c",
+        "Release",
+        "-v:m",
+        "-nologo"
+      ],
       "problemMatcher": "$msCompile"
     }
   ]

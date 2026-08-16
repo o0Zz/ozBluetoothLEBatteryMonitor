@@ -4,14 +4,19 @@
     {
       // .NET Framework debugging via vsdbg (C# extension / C# Dev Kit). Uses the
       // "coreclr" engine, which also debugs .NET Framework -- but only 64-bit
-      // processes, so the Debug build is forced to x64 in the .csproj.
+      // processes, so keep the Debug build 64-bit.
+      //
+      // Note PeripheralBatteryMonitor.Core.dll is embedded in the exe rather than
+      // written next to it, so bin\Debug\net48 holds the exe and its .pdb alone.
+      // Stepping into Core still works: the Core .pdb is portable and referenced
+      // from the embedded image.
       "name": "Debug PeripheralBatteryMonitor (.NET Framework)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build (Debug)",
-      "program": "${workspaceFolder}\\PeripheralBatteryMonitor\\bin\\Debug\\PeripheralBatteryMonitor.exe",
+      "program": "${workspaceFolder}\\src\\PeripheralBatteryMonitor.App\\bin\\Debug\\net48\\PeripheralBatteryMonitor.exe",
       "args": [],
-      "cwd": "${workspaceFolder}\\PeripheralBatteryMonitor\\bin\\Debug",
+      "cwd": "${workspaceFolder}\\src\\PeripheralBatteryMonitor.App\\bin\\Debug\\net48",
       "console": "internalConsole",
       "stopAtEntry": false
     }

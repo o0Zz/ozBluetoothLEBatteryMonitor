@@ -98,11 +98,17 @@ When the application is running, right-click the battery icon in the system tray
 
 ## Build from source
 
-Requires Visual Studio 2017+ Build Tools (MSBuild) and `nuget.exe`. The solution targets .NET Framework 4.8 in the legacy csproj format, so `dotnet build` will not work.
+Requires only the [.NET SDK](https://dotnet.microsoft.com/download) (8.0 or newer). The solution targets .NET Framework 4.8, but both projects are SDK-style and the reference assemblies come from a NuGet package, so no Visual Studio, no targeting pack and no `nuget.exe` are needed.
 
 ```sh
-nuget restore PeripheralBatteryMonitor.sln
-msbuild PeripheralBatteryMonitor.sln /p:Configuration=Release
+dotnet build PeripheralBatteryMonitor.sln -c Release
 ```
 
-The built executable is in `PeripheralBatteryMonitor/bin/Release/PeripheralBatteryMonitor.exe`.
+The built executable is `src/PeripheralBatteryMonitor.App/bin/Release/net48/PeripheralBatteryMonitor.exe` — still a single file: `PeripheralBatteryMonitor.Core.dll` is embedded inside it.
+
+### Layout
+
+```
+src/PeripheralBatteryMonitor.Core/   device discovery and battery reading. No UI.
+src/PeripheralBatteryMonitor.App/    WinForms tray icon, Settings and Info windows.
+```

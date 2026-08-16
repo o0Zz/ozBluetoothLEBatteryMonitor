@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- TargetFramework comes from Directory.Build.props (net48). -->
+
+    <RootNamespace>PeripheralBatteryMonitor</RootNamespace>
+    <AssemblyName>PeripheralBatteryMonitor.Core</AssemblyName>
+    <Description>Device discovery and battery reading for PeripheralBatteryMonitor. No UI dependencies.</Description>
+
+    <!-- The net48 SDK otherwise auto-references System.Windows.Forms' whole
+         neighbourhood, which would put a MessageBox one using-statement away from
+         Core and make the zero-UI rule enforceable only by review. Turning the
+         implicit set off and listing what Core actually needs makes the boundary
+         real rather than nominal. -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- WinRT from .NET Framework: Windows.winmd plus the System.Runtime.WindowsRuntime
+         facade that carries IAsyncOperation<T>.AsTask(). Both are ExcludeAssets=runtime
+         (the old packages.config build said <Private>False</Private>): the facade is part
+         of .NET Framework 4.5+ and resolves from the framework directory at run time, and
+         a .winmd is a compile-time contract with nothing to copy.
+
+         PackageReference is transitive, so the App project sees these too — which it
+         needs, because BatteryDevice has a public constructor taking a WinRT
+         DeviceInformation. -->
+    <PackageReference Include="DirectWindowsWinmd.Net" Version="10.0.15063.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!--
+    CLAUDE.md: "PeripheralBatteryMonitor.Core referencing System.Windows.Forms,
+    System.Drawing or any UI package is a build-breaking error."
+
+    That is a rule a reviewer has to remember, so make the build remember it
+    instead. Battery levels cross the boundary as int, never as a tray Icon; a
+    future port to WPF or a Windows service must not have to touch this project.
+
+    This matters more on net48 than it would on modern .NET: WinForms here is
+    wired with plain <Reference Include="System.Windows.Forms" /> items, which
+    are one careless line away.
+  -->
+  <Target Name="GuardCoreHasNoUiDependencies" BeforeTargets="CoreCompile">
+
+    <ItemGroup>
+      <_PbmRefCandidate Include="@(PackageReference);@(Reference);@(ProjectReference)" />
+      <_PbmForbiddenUiRef Include="@(_PbmRefCandidate)"
+                          Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(Identity)', '(?i)(System\.Windows\.Forms|System\.Drawing|WinForms|WindowsForms|PresentationFramework|PresentationCore|Avalonia|Microsoft\.Maui|Eto\.Forms)'))" />
+    </ItemGroup>
+
+    <Error Condition="'@(_PbmForbiddenUiRef)' != ''"
+           Code="PBM0001"
+           Text="PeripheralBatteryMonitor.Core must have zero UI dependencies, but references: @(_PbmForbiddenUiRef, ', '). Battery levels cross the boundary as int, never as an Icon. See CLAUDE.md, 'Layout'." />
+
+    <Error Condition="'$(UseWindowsForms)' == 'true' or '$(UseWPF)' == 'true'"
+           Code="PBM0002"
+           Text="PeripheralBatteryMonitor.Core must not set UseWindowsForms or UseWPF. See CLAUDE.md, 'Layout'." />
+
+    <Error Condition="'$(PublishAot)' == 'true' or '$(PublishTrimmed)' == 'true'"
+           Code="PBM0003"
+           Text="Never set PublishAot or PublishTrimmed. See CLAUDE.md, 'Target and deployment'." />
+
+  </Target>
+
+</Project>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="PeripheralBatteryMonitor.app" />
+
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- Declare support explicitly. Without these, Windows applies
+           compatibility shims that lie to the app about the OS version and,
+           more importantly here, about DPI. -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" /><!-- Windows 10 / 11 -->
+      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}" /><!-- Windows 8.1 -->
+      <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}" /><!-- Windows 8 -->
+      <supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}" /><!-- Windows 7 -->
+    </application>
+  </compatibility>
+
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <!-- THE fuzzy-font fix. A process that declares nothing is DPI-unaware:
+           Windows lays it out at 96 DPI and then bitmap-stretches the result to
+           the display scale, so every glyph is resampled. At 125% or 150% — the
+           default on most laptops — that is exactly the blur that showed up on
+           the Settings window and the Info popup.
+
+           System DPI awareness, not per-monitor v2, and that is a consequence of
+           shipping one file. On .NET Framework the manifest is only half of
+           per-monitor support: WinForms also needs DpiAwareness=PerMonitorV2 in
+           <exe>.config, and a config file is a second file. Claiming per-monitor
+           here without the WinForms half is worse than not claiming it — Windows
+           would stop scaling the window and WinForms would not start, leaving the
+           UI undersized on a high-DPI display.
+
+           Declaring system awareness costs sharpness only when the window is
+           dragged to a monitor at a different scale, where Windows stretches the
+           bitmap. Restoring per-monitor v2 means adding App.config back and
+           shipping it beside the exe. -->
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+    </windowsSettings>
+  </application>
+
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <!-- asInvoker, never requireAdministrator. Everything this app writes is
+             per-user: HKCU\SOFTWARE\PeripheralBatteryMonitor and the HKCU Run key.
+             Reading HID and Bluetooth needs no elevation, and an elevated tray
+             app cannot be launched from the HKCU Run key without a UAC prompt at
+             every logon. -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+</assembly>

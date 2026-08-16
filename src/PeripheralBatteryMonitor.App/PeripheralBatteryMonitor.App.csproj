@@ -1,0 +1,102 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- TargetFramework comes from Directory.Build.props (net48). -->
+
+    <RootNamespace>PeripheralBatteryMonitor</RootNamespace>
+    <AssemblyName>PeripheralBatteryMonitor</AssemblyName>
+    <Description>PeripheralBatteryMonitor — battery levels for wireless peripherals, in the system tray.</Description>
+
+    <!-- Load-bearing: the manifest is the only thing that makes this process
+         DPI-aware. Without it Windows renders the window at 96 DPI and bitmap-
+         stretches it to the display scale, which is what made the fonts fuzzy. -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Resources\Icon_Battery_100.ico</ApplicationIcon>
+
+    <!-- AnyCPU, but stated rather than defaulted: vsdbg (the "coreclr" launch
+         configuration in .vscode) attaches to 64-bit processes only, and the HID
+         P/Invoke layer branches on IntPtr.Size for the SP_DEVICE_INTERFACE_DETAIL_DATA
+         cbSize, so which side of that branch ships should not be an accident. -->
+    <Prefer32Bit>false</Prefer32Bit>
+
+    <!-- The only executable in the product, and the release page offers the bare
+         .exe. Left to itself the SDK still synthesises a PeripheralBatteryMonitor.exe.config
+         carrying nothing but a <supportedRuntime> hint, which the shim does not
+         need: the CLR picks 4.x from the image's own runtime version, and net48
+         is present on every OS this app targets. Binding redirects are equally
+         unnecessary — EmbeddedAssemblies answers by simple name and ignores
+         versions, and nothing else ships beside the exe. -->
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+
+    <!-- The three .resx files carry non-string resources (each form's $this.Icon,
+         and the five tray .ico ResXFileRefs). `dotnet build` runs GenerateResource
+         on .NET, which cannot BinaryFormatter-serialise those the way desktop
+         MSBuild does, so it needs the pre-serialised writer instead. That is what
+         buys `dotnet build` on this repo — without it the solution can only be
+         built from a Visual Studio install.
+
+         The reader side is a real run-time dependency: System.Resources.Extensions
+         is named in the .resources header, so ResourceManager loads it on the
+         first icon lookup. It is copy-local, which means EmbedReferencedAssemblies
+         below puts it in the exe like everything else. -->
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+  </ItemGroup>
+
+  <!-- WinForms on net48 is wired with classic references. UseWindowsForms is a
+       modern-.NET property and does nothing here. -->
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PeripheralBatteryMonitor.Core\PeripheralBatteryMonitor.Core.csproj" />
+  </ItemGroup>
+
+  <!--
+    "A single executable. PeripheralBatteryMonitor.exe and nothing else."
+
+    That was true before Core was split out and has to stay true: the README tells
+    users to download one file and the release workflow uploads the bare exe.
+    net48 has no PublishSingleFile, so the dependency is embedded as a resource
+    and served back by EmbeddedAssemblies at run time.
+
+    Runs after ResolveReferences, which is what populates ReferenceCopyLocalPaths,
+    and before PrepareResources, which is what turns EmbeddedResource items into
+    manifest resources.
+
+    The same items are then removed from the copy-local set, so bin/ holds the exe
+    alone. That is not tidiness: it means an F5 run resolves Core through exactly
+    the path a released build uses, instead of silently finding the DLL on disk
+    and leaving the embedded path untested until a user hits it.
+  -->
+  <Target Name="EmbedReferencedAssemblies" AfterTargets="ResolveReferences">
+
+    <ItemGroup>
+      <_PbmEmbeddedDependency Include="@(ReferenceCopyLocalPaths)"
+                              Condition="'%(Extension)' == '.dll'" />
+
+      <EmbeddedResource Include="@(_PbmEmbeddedDependency)">
+        <!-- Must match EmbeddedAssemblies.Prefix. -->
+        <LogicalName>PeripheralBatteryMonitor.Embedded.%(Filename)%(Extension)</LogicalName>
+        <Visible>false</Visible>
+      </EmbeddedResource>
+
+      <!-- Everything, not just the .dll items: the reference .pdb has no business
+           in the output folder either. Compilation reads ReferencePath, which is
+           untouched. -->
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" />
+    </ItemGroup>
+
+    <Message Importance="normal"
+             Text="Embedded into $(AssemblyName).exe: @(_PbmEmbeddedDependency->'%(Filename)%(Extension)', ', ')" />
+
+  </Target>
+
+</Project>

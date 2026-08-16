@@ -1,0 +1,42 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>12.0</LangVersion>
+
+    <!-- .NET Framework 4.8 ships with Windows 10 1903+ and Windows 11, so
+         PeripheralBatteryMonitor.exe runs on a clean machine with nothing to
+         install. That is the whole reason for this target: no version of Windows
+         preinstalls the .NET 5+ runtime, so a framework-dependent modern build
+         would fail to launch, and a self-contained one would cost ~150 MB for a
+         tray icon.
+
+         It is also the only target that can consume Windows.winmd the way this
+         app does — see the WinRT bridging note in CLAUDE.md.
+
+         Never add PublishAot or PublishTrimmed. -->
+    <TargetFramework>net48</TargetFramework>
+
+    <Product>PeripheralBatteryMonitor</Product>
+    <Company>o0Zz</Company>
+    <Copyright>Copyright (c) o0Zz</Copyright>
+    <NeutralLanguage>en</NeutralLanguage>
+
+    <!-- Unreleased default. CI overrides all three from `git describe` on a tag
+         build (-p:Version=… -p:AssemblyVersion=… -p:FileVersion=…); the Settings
+         form prints AssemblyVersion, so that is the one that must be patched. -->
+    <Version>0.0.0</Version>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <FileVersion>0.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Build-time only. Supplies the net48 reference assemblies so the repo
+         builds with any recent .NET SDK, with no Visual Studio and no targeting
+         pack installed. Contributes nothing at runtime. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
