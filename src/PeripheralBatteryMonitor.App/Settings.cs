@@ -241,8 +241,7 @@ namespace PeripheralBatteryMonitor
                 lines.Add(entry.Value);
             lines.AddRange(unknown);
 
-            if (theLowestBattery > 0)
-                NotifyIcon.Icon = GetIconForBatteryLevel(theLowestBattery);
+            NotifyIcon.Icon = GetIconForBatteryLevel(theLowestBattery);
 
             NotifyIcon.Text = FitTooltip(lines);
         }
