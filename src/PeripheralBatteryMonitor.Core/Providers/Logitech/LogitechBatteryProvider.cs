@@ -1,9 +1,9 @@
 using System;
 using System.Diagnostics;
-using PeripheralBatteryMonitor.Battery.Core;
-using PeripheralBatteryMonitor.Battery.Hid;
+using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Hid;
 
-namespace PeripheralBatteryMonitor.Battery.Providers.Logitech
+namespace PeripheralBatteryMonitor.Providers.Logitech
 {
     /// <summary>
     /// Reads battery for Logitech LIGHTSPEED devices that talk to their own USB dongle -- the

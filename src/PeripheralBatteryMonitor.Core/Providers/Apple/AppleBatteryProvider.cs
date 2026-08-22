@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeripheralBatteryMonitor.Battery.Core;
-using PeripheralBatteryMonitor.Battery.Hid;
+using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Hid;
 
-namespace PeripheralBatteryMonitor.Battery.Providers
+namespace PeripheralBatteryMonitor.Providers
 {
     /// <summary>
     /// Reads battery for Apple "Magic" devices (Magic Mouse / Magic Trackpad / Magic

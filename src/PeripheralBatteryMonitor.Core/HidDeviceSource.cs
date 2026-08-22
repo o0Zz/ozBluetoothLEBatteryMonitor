@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using PeripheralBatteryMonitor.Battery.Core;
-using PeripheralBatteryMonitor.Battery.Hid;
-using PeripheralBatteryMonitor.Battery.Providers;
+using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Hid;
+using PeripheralBatteryMonitor.Providers;
 
 namespace PeripheralBatteryMonitor
 {

@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor.Battery.Core
+namespace PeripheralBatteryMonitor.Abstractions
 {
     /// <summary>
     /// Optional capability a provider may implement when it maintains a live link to the

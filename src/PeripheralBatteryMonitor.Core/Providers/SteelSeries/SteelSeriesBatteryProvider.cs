@@ -1,9 +1,9 @@
 using System;
 using System.Diagnostics;
-using PeripheralBatteryMonitor.Battery.Core;
-using PeripheralBatteryMonitor.Battery.Hid;
+using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Hid;
 
-namespace PeripheralBatteryMonitor.Battery.Providers.SteelSeries
+namespace PeripheralBatteryMonitor.Providers.SteelSeries
 {
     /// <summary>
     /// Battery for SteelSeries Arctis Nova wireless headsets, which reach the PC on their own

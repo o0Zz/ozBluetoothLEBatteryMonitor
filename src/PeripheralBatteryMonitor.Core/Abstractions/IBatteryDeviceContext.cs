@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor.Battery.Core
+namespace PeripheralBatteryMonitor.Abstractions
 {
     /// <summary>
     /// Read-only view of a device that battery providers operate on. Implemented by

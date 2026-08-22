@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using PeripheralBatteryMonitor.Battery.Hid;
-using PeripheralBatteryMonitor.Battery.Providers.Logitech;
-using PeripheralBatteryMonitor.Battery.Providers.Razer;
-using PeripheralBatteryMonitor.Battery.Providers.SteelSeries;
+using PeripheralBatteryMonitor.Hid;
+using PeripheralBatteryMonitor.Providers.Logitech;
+using PeripheralBatteryMonitor.Providers.Razer;
+using PeripheralBatteryMonitor.Providers.SteelSeries;
 
-namespace PeripheralBatteryMonitor.Battery.Providers
+namespace PeripheralBatteryMonitor.Providers
 {
     /// <summary>
     /// The HID interfaces the discovery layer should surface as tracked devices. Companion to

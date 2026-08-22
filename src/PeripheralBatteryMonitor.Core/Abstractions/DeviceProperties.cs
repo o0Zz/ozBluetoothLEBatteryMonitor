@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor.Battery.Core
+namespace PeripheralBatteryMonitor.Abstractions
 {
     /// <summary>
     /// Canonical keys into a device's property bag. Centralised here (Core) so both

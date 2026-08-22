@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Devices.Enumeration;
-using PeripheralBatteryMonitor.Battery.Core;
-using PeripheralBatteryMonitor.Battery.Providers;
+using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Providers;
 
 namespace PeripheralBatteryMonitor
 {
@@ -31,7 +31,7 @@ namespace PeripheralBatteryMonitor
         private ConcurrentDictionary<string, object> propertyCache = new ConcurrentDictionary<string, object>();
 
             //Candidate providers for this device, in priority order. One list per device so a
-            //stateful provider (e.g. GATT) can cache its connection. See Service/Battery/.
+            //stateful provider (e.g. GATT) can cache its connection. See Providers/.
         private readonly List<IBatteryProvider> providers = BatteryProviderRegistry.CreateProviders();
 
             //The provider that last read this device (a fast-path hint, not a hard lock).

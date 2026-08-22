@@ -1,7 +1,7 @@
 using System;
-using PeripheralBatteryMonitor.Battery.Core;
+using PeripheralBatteryMonitor.Abstractions;
 
-namespace PeripheralBatteryMonitor.Battery.Providers
+namespace PeripheralBatteryMonitor.Providers
 {
     /// <summary>
     /// Reads the battery level Windows itself publishes for a Bluetooth device, from the

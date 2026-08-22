@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor.Battery.Core
+namespace PeripheralBatteryMonitor.Abstractions
 {
     /// <summary>
     /// A battery source for one family of devices (GATT, a device property, the Apple HID

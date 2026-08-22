@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using PeripheralBatteryMonitor.Battery.Core;
-using PeripheralBatteryMonitor.Battery.Providers.Logitech;
-using PeripheralBatteryMonitor.Battery.Providers.Razer;
-using PeripheralBatteryMonitor.Battery.Providers.SteelSeries;
+using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Providers.Logitech;
+using PeripheralBatteryMonitor.Providers.Razer;
+using PeripheralBatteryMonitor.Providers.SteelSeries;
 
-namespace PeripheralBatteryMonitor.Battery.Providers
+namespace PeripheralBatteryMonitor.Providers
 {
     /// <summary>
     /// Ordered registry of battery providers. Registration order is priority order: when a

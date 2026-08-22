@@ -2,8 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Windows.Devices.Enumeration;
-using PeripheralBatteryMonitor.Battery.Core;
-using PeripheralBatteryMonitor.Battery.Hid;
+using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Hid;
 
 namespace PeripheralBatteryMonitor
 {

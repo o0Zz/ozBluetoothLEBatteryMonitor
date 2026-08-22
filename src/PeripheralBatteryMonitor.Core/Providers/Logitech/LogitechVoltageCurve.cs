@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor.Battery.Providers.Logitech
+namespace PeripheralBatteryMonitor.Providers.Logitech
 {
     /// <summary>
     /// Converts a single-cell Li-Po terminal voltage into a rough charge percentage.

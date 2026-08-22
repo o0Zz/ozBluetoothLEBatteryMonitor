@@ -1,6 +1,6 @@
 using System;
 
-namespace PeripheralBatteryMonitor.Battery.Hid
+namespace PeripheralBatteryMonitor.Hid
 {
     /// <summary>
     /// Describes the one HID interface that stands for a physical device the app should

@@ -1,9 +1,9 @@
 using System;
 using System.Diagnostics;
-using PeripheralBatteryMonitor.Battery.Core;
-using PeripheralBatteryMonitor.Battery.Hid;
+using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Hid;
 
-namespace PeripheralBatteryMonitor.Battery.Providers.Razer
+namespace PeripheralBatteryMonitor.Providers.Razer
 {
     /// <summary>
     /// Battery for Razer wireless mice, which reach the PC on their own HyperSpeed dongle (or

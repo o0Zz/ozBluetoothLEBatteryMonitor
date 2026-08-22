@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor.Battery.Hid
+namespace PeripheralBatteryMonitor.Hid
 {
     /// <summary>
     /// One HID interface (a single top-level collection) as reported by the OS. A physical

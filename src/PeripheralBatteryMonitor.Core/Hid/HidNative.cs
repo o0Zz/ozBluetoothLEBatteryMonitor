@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-namespace PeripheralBatteryMonitor.Battery.Hid
+namespace PeripheralBatteryMonitor.Hid
 {
     /// <summary>
     /// Raw Win32 surface for the HID stack (setupapi enumeration + hid.dll + overlapped

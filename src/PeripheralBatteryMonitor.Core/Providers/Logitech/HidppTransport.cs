@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics;
-using PeripheralBatteryMonitor.Battery.Hid;
+using PeripheralBatteryMonitor.Hid;
 
-namespace PeripheralBatteryMonitor.Battery.Providers.Logitech
+namespace PeripheralBatteryMonitor.Providers.Logitech
 {
     /// <summary>
     /// Logitech HID++ 2.0 request/response framing over one HID interface.

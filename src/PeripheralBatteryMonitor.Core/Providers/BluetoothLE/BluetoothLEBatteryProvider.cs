@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Storage.Streams;
-using PeripheralBatteryMonitor.Battery.Core;
+using PeripheralBatteryMonitor.Abstractions;
 
-namespace PeripheralBatteryMonitor.Battery.Providers
+namespace PeripheralBatteryMonitor.Providers
 {
     /// <summary>
     /// Reads battery over Bluetooth Low Energy, from the **GATT Battery Service 0x180F /

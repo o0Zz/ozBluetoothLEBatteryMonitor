@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
-namespace PeripheralBatteryMonitor.Battery.Hid
+namespace PeripheralBatteryMonitor.Hid
 {
     /// <summary>
     /// An open HID interface, in one of two modes -- see <see cref="Open"/> versus

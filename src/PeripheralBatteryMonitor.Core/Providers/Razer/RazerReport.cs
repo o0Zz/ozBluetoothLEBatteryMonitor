@@ -1,9 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
-using PeripheralBatteryMonitor.Battery.Hid;
+using PeripheralBatteryMonitor.Hid;
 
-namespace PeripheralBatteryMonitor.Battery.Providers.Razer
+namespace PeripheralBatteryMonitor.Providers.Razer
 {
     /// <summary>
     /// Razer's vendor request/response framing, carried on HID **feature reports** rather than

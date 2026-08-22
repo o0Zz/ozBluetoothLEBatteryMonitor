@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
-namespace PeripheralBatteryMonitor.Battery.Hid
+namespace PeripheralBatteryMonitor.Hid
 {
     /// <summary>
     /// Lists the HID interfaces currently present on the machine.

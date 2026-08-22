@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor.Battery.Core
+namespace PeripheralBatteryMonitor.Abstractions
 {
     /// <summary>
     /// How a tracked device is reached. Battery providers consult this to decide whether
