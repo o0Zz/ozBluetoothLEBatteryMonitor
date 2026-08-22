@@ -1,8 +1,9 @@
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Text;
 using System.Windows.Forms;
 
 namespace PeripheralBatteryMonitor
@@ -200,7 +201,8 @@ namespace PeripheralBatteryMonitor
             NotifyIcon.Visible = true;
 
             int theLowestBattery = 100;
-            string theBalloonText = "";
+            List<KeyValuePair<int, string>> known = new List<KeyValuePair<int, string>>();
+            List<string> unknown = new List<string>();
 
             foreach (var kv in deviceDict)
             {
@@ -210,23 +212,39 @@ namespace PeripheralBatteryMonitor
                 if (level < 0 && checkBoxHideUnknownBattery.Checked)
                     continue;
 
-                if ((level >= 0) && (level < theLowestBattery))
-                    theLowestBattery = level;
+                if (level < 0)
+                {
+                    unknown.Add(Strings.Format("tray.device.unknown", name));
+                }
+                else
+                {
+                    if (level < theLowestBattery)
+                        theLowestBattery = level;
 
-                if (theBalloonText.Length != 0)
-                    theBalloonText += "\n";
-
-                theBalloonText += (level < 0)
-                    ? Strings.Format("tray.device.unknown", name)
-                    : Strings.Format("tray.device.known", name, level);
+                    known.Add(new KeyValuePair<int, string>(level, Strings.Format("tray.device.known", name, level)));
+                }
 
                 NotifyLowBattery(kv.Key, name, level);
             }
 
+                //The tooltip holds 63 characters and a device list can easily exceed that, so
+                //the order the lines are written in decides which ones survive FitTooltip.
+                //Devices with a real reading come first, lowest battery first -- that one is
+                //what the tray icon is showing and the reason the user is hovering. Devices
+                //still reading "?" carry no information, so they queue behind and are the first
+                //thing dropped: before this, the dictionary's arbitrary order could spend the
+                //whole tooltip on two "?" lines and cut away every real percentage.
+            known.Sort((a, b) => a.Key.CompareTo(b.Key));
+
+            List<string> lines = new List<string>(known.Count + unknown.Count);
+            foreach (var entry in known)
+                lines.Add(entry.Value);
+            lines.AddRange(unknown);
+
             if (theLowestBattery > 0)
                 NotifyIcon.Icon = GetIconForBatteryLevel(theLowestBattery);
 
-            NotifyIcon.Text = FitTooltip(theBalloonText);
+            NotifyIcon.Text = FitTooltip(lines);
         }
 
             //NotifyIcon.Text is a 64-character buffer *including* the terminator, so 63 is
@@ -235,19 +253,54 @@ namespace PeripheralBatteryMonitor
             //Math.Min(length, 64) was off by exactly one and fired as soon as enough devices
             //were paired for their names to fill the tooltip.
         private const int TooltipLimit = 63;
+        private const string TooltipMore = "…";
 
-            //The aggregate tooltip is one device per line, so drop whole lines before cutting
-            //inside one: "Logi M650 L: 80%" truncated mid-name reads as a different device.
-        private static string FitTooltip(string text)
+        /// <summary>
+        /// Joins tooltip lines into what NotifyIcon.Text can actually hold, keeping the ones
+        /// the caller put first.
+        ///
+        /// Lines are dropped whole rather than cut inside one -- the tooltip is one device per
+        /// line and "Logi M650 L: 80%" cut mid-name reads as a different device. Dropping stops
+        /// at the first line that does not fit instead of skipping it to squeeze in a shorter
+        /// one further down, because the caller's order is a priority order.
+        /// </summary>
+        private static string FitTooltip(IList<string> lines)
         {
-            if (text.Length <= TooltipLimit)
+            if (lines.Count == 0)
+                return "";
+
+            int taken;
+            string text = TakeLines(lines, TooltipLimit, out taken);
+            if (taken == lines.Count)
                 return text;
 
-            int lastLine = text.LastIndexOf('\n', TooltipLimit - 2);
-            if (lastLine > 0)
-                return text.Substring(0, lastLine) + "\n…";
+                //Room for the "…" line has to be reserved before the fit, not carved out of it.
+            text = TakeLines(lines, TooltipLimit - TooltipMore.Length - 1, out taken);
+            if (taken == 0)
+                return lines[0].Substring(0, TooltipLimit - TooltipMore.Length) + TooltipMore;
 
-            return text.Substring(0, TooltipLimit - 1) + "…";
+            return text + "\n" + TooltipMore;
+        }
+
+        private static string TakeLines(IList<string> lines, int limit, out int taken)
+        {
+            StringBuilder text = new StringBuilder();
+            taken = 0;
+
+            foreach (string line in lines)
+            {
+                int cost = (text.Length == 0 ? 0 : 1) + line.Length;
+                if (text.Length + cost > limit)
+                    break;
+
+                if (text.Length != 0)
+                    text.Append('\n');
+
+                text.Append(line);
+                taken++;
+            }
+
+            return text.ToString();
         }
 
         private void UpdateIconPerDevice(ConcurrentDictionary<string, BatteryDevice> deviceDict)
@@ -276,7 +329,7 @@ namespace PeripheralBatteryMonitor
                 string tooltip = (level < 0)
                     ? Strings.Format("tray.device.unknown", name)
                     : Strings.Format("tray.device.known", name, level);
-                icon.Text = FitTooltip(tooltip);
+                icon.Text = FitTooltip(new string[] { tooltip });
 
                 NotifyLowBattery(kv.Key, name, level);
             }
