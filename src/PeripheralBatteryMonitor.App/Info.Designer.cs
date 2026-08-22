@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor
+﻿namespace PeripheralBatteryMonitor
 {
     partial class Info
     {
@@ -31,6 +31,7 @@ namespace PeripheralBatteryMonitor
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripRefresh = new System.Windows.Forms.ToolStripButton();
             this.listView1 = new System.Windows.Forms.ListView();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -40,7 +41,8 @@ namespace PeripheralBatteryMonitor
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
-            this.toolStripStatusLabel2});
+            this.toolStripStatusLabel2,
+            this.toolStripRefresh});
             this.statusStrip1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.TabIndex = 0;
@@ -57,6 +59,18 @@ namespace PeripheralBatteryMonitor
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
             this.toolStripStatusLabel2.Size = new System.Drawing.Size(15, 20);
             this.toolStripStatusLabel2.Text = "-";
+            // 
+            // toolStripRefresh
+            //
+            // On the strip the form already has, right-aligned, rather than a real Button in
+            // a new docked panel: the strip is the only chrome here, and a ToolStripItem
+            // auto-sizes to its text, so a long translation widens the item instead of being
+            // clipped by a designer-written width.
+            this.toolStripRefresh.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripRefresh.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripRefresh.Name = "toolStripRefresh";
+            this.toolStripRefresh.Text = "Refresh";
+            this.toolStripRefresh.Click += new System.EventHandler(this.toolStripRefresh_Click);
             // 
             // listView1
             // 
@@ -109,5 +123,6 @@ namespace PeripheralBatteryMonitor
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
+        private System.Windows.Forms.ToolStripButton toolStripRefresh;
     }
 }

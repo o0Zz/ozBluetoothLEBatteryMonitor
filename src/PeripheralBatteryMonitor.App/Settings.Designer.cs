@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor
+﻿namespace PeripheralBatteryMonitor
 {
     partial class Settings
     {
@@ -19,6 +19,7 @@ namespace PeripheralBatteryMonitor
             this.components = new System.ComponentModel.Container();
             this.NotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
@@ -75,11 +76,21 @@ namespace PeripheralBatteryMonitor
             //
             this.contextMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.refreshToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.aboutToolStripMenuItem,
             this.toolStripMenuItem1,
             this.exitToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip1";
+            //
+            // refreshToolStripMenuItem
+            //
+            // First entry, because it is the only one that does something to the devices
+            // rather than opening a window. English literal like its neighbours -- see the
+            // Interface language notes; ApplyStrings overwrites it straight after this runs.
+            this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
+            this.refreshToolStripMenuItem.Text = "Refresh";
+            this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
             //
             // settingsToolStripMenuItem
             //
@@ -490,6 +501,7 @@ namespace PeripheralBatteryMonitor
         private System.Windows.Forms.NotifyIcon NotifyIcon;
         private System.Windows.Forms.Timer IconTimer;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;

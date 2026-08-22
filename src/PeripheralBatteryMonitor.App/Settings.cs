@@ -54,7 +54,7 @@ namespace PeripheralBatteryMonitor
             deviceManager = new DeviceManager(new DeviceNotification(this));
             deviceManager.scan(checkBoxScanForEver.Checked);
 
-            infoForm = new Info(deviceManager, () => checkBoxHideUnknownBattery.Checked);
+            infoForm = new Info(deviceManager, () => checkBoxHideUnknownBattery.Checked, RefreshNow);
 
             IconTimer.Interval = ((int)numericUpDownRefreshPeriod.Value) * 60 * 1000;
             IconTimer.Start();
@@ -146,6 +146,38 @@ namespace PeripheralBatteryMonitor
         private void IconTimer_Tick(object sender, EventArgs e)
         {
             UpdateIcon();
+        }
+
+        /// <summary>
+        /// Polls every device now instead of waiting for the next tick. Shared by the tray
+        /// menu's Refresh entry and the device list's Refresh button, so both do exactly the
+        /// same thing -- which for the list means the tray icon and tooltip update with it.
+        /// </summary>
+        internal void RefreshNow()
+        {
+                //A poll is I/O on the UI thread -- a single GATT read allows itself 5 s --
+                //so say so, rather than letting the window look frozen. Re-entry needs no
+                //guard here: UpdateIcon already drops a nested call.
+            Cursor previous = Cursor.Current;
+            Cursor.Current = Cursors.WaitCursor;
+            try
+            {
+                UpdateIcon();
+            }
+            finally
+            {
+                Cursor.Current = previous;
+            }
+
+                //Restart the interval so the next automatic poll is a full period away
+                //instead of firing seconds after the user already asked for one.
+            IconTimer.Stop();
+            IconTimer.Start();
+        }
+
+        private void refreshToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RefreshNow();
         }
 
         private static Icon GetIconForBatteryLevel(int level)
@@ -542,6 +574,7 @@ namespace PeripheralBatteryMonitor
         {
             Text = Strings.Get("settings.title");
 
+            refreshToolStripMenuItem.Text = Strings.Get("tray.refresh");
             settingsToolStripMenuItem.Text = Strings.Get("tray.settings");
             aboutToolStripMenuItem.Text = Strings.Get("tray.about");
             exitToolStripMenuItem.Text = Strings.Get("tray.exit");

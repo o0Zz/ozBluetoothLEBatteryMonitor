@@ -6,6 +6,7 @@
 app.name = Peripheral Battery Monitor
 
 # ---- icône de la zone de notification ----
+tray.refresh = Actualiser
 tray.settings = Paramètres
 tray.about = À propos
 tray.exit = Quitter
@@ -66,6 +67,7 @@ about.author = par o0Zz — {0}
 about.link.failed = Impossible d'ouvrir la page
 
 # ---- boutons ----
+button.refresh = Actualiser
 button.ok = OK
 button.close = Fermer
 button.about = À propos...

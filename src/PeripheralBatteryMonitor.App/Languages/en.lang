@@ -11,6 +11,7 @@
 app.name = Peripheral Battery Monitor
 
 # ---- tray icon ----
+tray.refresh = Refresh
 tray.settings = Settings
 tray.about = About
 tray.exit = Exit
@@ -73,6 +74,7 @@ about.author = by o0Zz — {0}
 about.link.failed = Could not open the page
 
 # ---- buttons ----
+button.refresh = Refresh
 button.ok = OK
 button.close = Close
 button.about = About...

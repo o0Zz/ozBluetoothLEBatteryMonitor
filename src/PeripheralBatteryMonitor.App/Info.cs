@@ -1,4 +1,4 @@
-using PeripheralBatteryMonitor;
+﻿using PeripheralBatteryMonitor;
 using System;
 using System.Collections.Concurrent;
 using System.Windows.Forms;
@@ -9,12 +9,17 @@ namespace PeripheralBatteryMonitor
     {
         private DeviceManager deviceManager;
         private Func<bool> hideUnknownBattery;
+        private Action refreshNow;
 
-        public Info(DeviceManager deviceManager, Func<bool> hideUnknownBattery)
+            //refreshNow is Settings.RefreshNow: this window shows battery state but does not
+            //own the polling, the same reason hideUnknownBattery arrives as a callback rather
+            //than this form reading the registry itself.
+        public Info(DeviceManager deviceManager, Func<bool> hideUnknownBattery, Action refreshNow)
         {
             InitializeComponent();
             this.deviceManager = deviceManager;
             this.hideUnknownBattery = hideUnknownBattery;
+            this.refreshNow = refreshNow;
         }
 
         /// <summary>
@@ -31,6 +36,7 @@ namespace PeripheralBatteryMonitor
                 listView1.Columns[2].Text = Strings.Get("info.column.battery");
             }
             toolStripStatusLabel1.Text = Strings.Get("info.lastUpdated") + " ";
+            toolStripRefresh.Text = Strings.Get("button.refresh");
         }
 
             //Columns are built here rather than in the constructor because ListView
@@ -110,6 +116,25 @@ namespace PeripheralBatteryMonitor
         }
 
         private void Info_Activated(object sender, EventArgs e)
+        {
+            Populate();
+        }
+
+            //Clicking an item on this form does not deactivate it, so the Deactivate handler
+            //above does not fight the button. Poll first, then rebuild from what came back.
+        private void toolStripRefresh_Click(object sender, EventArgs e)
+        {
+            if (refreshNow != null)
+                refreshNow();
+
+            Populate();
+        }
+
+        /// <summary>
+        /// Rebuilds the rows from the battery state already cached on each device. Reads
+        /// only -- polling is RefreshNow's job, and this runs on every Activated.
+        /// </summary>
+        private void Populate()
         {
             DateTime ?lastUpdated = null;
 

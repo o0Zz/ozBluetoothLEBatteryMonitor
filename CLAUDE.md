@@ -58,11 +58,25 @@ Both projects use root namespace `PeripheralBatteryMonitor`, so the App does not
 
 ## Windows
 
-Three, plus the tray icon and its context menu (Settings / About / Exit).
+Three, plus the tray icon and its context menu (Refresh / Settings / About / Exit).
 
 - **`Settings`** — the main form, and the tray host. It owns `NotifyIcon`, `IconTimer` and the context menu, and is kept hidden by `SetVisibleCore` unless the user asked for it. Two group boxes, *General* and *Devices and tray icons*, each setting followed by a `GrayText` hint line; a bottom strip with *About…* and *Close*. **There is no OK/Cancel**: every setting is written to `HKCU` in its own `CheckedChanged` handler the moment it changes, so there is nothing pending for a Cancel to discard, and *Close* only hides the window.
 - **`Info`** — the per-device list, shown by double-clicking the tray icon. Sizable, so the `ListView` is `Dock = Fill` and the `StatusStrip` `Dock = Bottom`. It used to be neither: the list was pinned at `(0, -3)` with a hand-fitted `416x143` — the negative Y hid its top border and the height was eyeballed to clear the status strip, landing two pixels short of it. A control with no `Dock` and no `Anchor` does not move, so dragging the window border left the list stranded at its design size. `BorderStyle = None` because the list *is* the window here, which is what the `-3` was approximating.
 - **`AboutForm`** — version, what the app does, and the device families it can read. Built in code rather than from a designer file, so it has no `.resx`. Shown with no owner, because the owner would be the hidden `Settings` form and `ShowDialog` refuses an invisible owner.
+
+**Manual refresh has two entry points and one implementation.** `Settings.RefreshNow` is
+the tray menu's *Refresh* entry and the `Info` window's right-aligned *Refresh* button on
+its `StatusStrip`; both call it, so refreshing from the list also updates the tray icon and
+tooltip. It wraps `UpdateIcon` in a wait cursor — a poll is real I/O on the UI thread, a
+single GATT read alone allows itself 5 s — and then restarts `IconTimer`, so the next
+automatic poll is a full period away instead of firing seconds after the user asked for one.
+`Info` receives it as an `Action` through its constructor rather than polling itself, the
+same reason `hideUnknownBattery` arrives as a `Func<bool>`: that window renders battery
+state, it does not own it. Its row-building moved out of `Info_Activated` into `Populate`,
+which reads cached state only; the button polls first, then repopulates. A `ToolStripItem`
+was chosen over a real `Button` because it auto-sizes to its text, so "Aktualisieren" widens
+the item instead of being clipped — and because clicking one does not deactivate the form,
+which matters here: `Info_Deactivate` hides the window.
 
 **Lay these out with panels, not coordinates.** `Settings` is a `TableLayoutPanel` of two `GroupBox`es, each holding a top-down `FlowLayoutPanel`; every hint is an `AutoSize` label with `MaximumSize = (400, 0)` so it wraps and grows downwards. The form itself is `AutoSize` — the height that fits depends on where those labels wrap, which depends on the display scale, so the only version that is right at both 100% and 150% is the one that asks its own contents. A fixed `ClientSize` here clips at the bottom.
 
