@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Storage.Streams;
-using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Contracts;
 
 namespace PeripheralBatteryMonitor.Providers
 {

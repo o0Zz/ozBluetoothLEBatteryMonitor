@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Devices.Enumeration;
-using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Contracts;
 using PeripheralBatteryMonitor.Providers;
 
 namespace PeripheralBatteryMonitor
@@ -120,30 +120,41 @@ namespace PeripheralBatteryMonitor
             Debug.WriteLine("[Battery] '" + deviceName + "' <- no provider produced a value (transport=" + transport + ", level=" + batteryLevel + ")");
         }
 
+        /// <summary>
+        /// Is the device reachable right now? Three sources, most authoritative first.
+        ///
+        /// The caller uses this to decide what the tray icon and its tooltip are allowed to
+        /// report, so a wrong answer is visible either way: say "connected" for a device in a
+        /// drawer and its last reading keeps dragging the icon down, say "disconnected" for a
+        /// live one and it vanishes from the tray.
+        /// </summary>
         public bool IsConnected()
         {
-                //USB HID: no OS connection state exists for the device behind the dongle, so
-                //"did it answer the last poll" is the only meaningful answer. The dongle can
-                //stay plugged in with the headset switched off.
-            if (transport == DeviceTransport.UsbHid)
-                return lastReadSucceeded;
+                //1. The provider actually BOUND to this device, when it maintains a live link
+                //   (only GATT does). It must be the bound one, not the first candidate that
+                //   implements the interface: the candidate list holds every registered
+                //   provider, so for any BLE device it always found BluetoothLEBatteryProvider
+                //   -- whose link is legitimately down when it never opened one. A BLE device
+                //   with no GATT battery service, reading its level from the Windows property
+                //   bag instead, therefore reported "disconnected" for its entire life.
+            IDeviceLinkState link = boundProvider as IDeviceLinkState;
+            if (link != null)
+                return link.IsLinkUp(this);
 
-            if (transport == DeviceTransport.BluetoothClassic)
-            {
-                object aepConnected;
-                if (propertyCache.TryGetValue(DeviceProperties.PROP_AEP_IS_CONNECTED, out aepConnected) && aepConnected is bool)
-                    return (bool)aepConnected;
-                return batteryLevel >= 0;
-            }
+                //2. Windows' own answer, published for both Bluetooth transports.
+                //   Consulted BEFORE the read test below, because a battery reading outlives
+                //   the connection that produced it: Windows nulls PROP_BATTERY_LEVEL on
+                //   disconnect and CacheProperties drops nulls, so the last percentage stays
+                //   in the bag and BluetoothBatteryProvider keeps handing it back.
+            object aepConnected;
+            if (propertyCache.TryGetValue(DeviceProperties.PROP_AEP_IS_CONNECTED, out aepConnected) && aepConnected is bool)
+                return (bool)aepConnected;
 
-                //BLE: defer to the first provider that tracks a live link (the GATT provider).
-            foreach (IBatteryProvider provider in providers)
-            {
-                IDeviceLinkState link = provider as IDeviceLinkState;
-                if (link != null)
-                    return link.IsLinkUp(this);
-            }
-            return batteryLevel >= 0;
+                //3. Nothing authoritative to consult. USB HID is the case that matters here:
+                //   there is no OS-level connection state for a device behind its own dongle,
+                //   and the dongle stays plugged in while the peripheral is switched off, so
+                //   whether it answered the most recent poll IS the liveness test.
+            return lastReadSucceeded;
         }
 
         public int GetBatteryLevel()

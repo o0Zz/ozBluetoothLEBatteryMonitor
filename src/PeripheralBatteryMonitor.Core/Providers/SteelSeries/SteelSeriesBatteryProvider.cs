@@ -1,6 +1,6 @@
 using System;
 using System.Diagnostics;
-using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Contracts;
 using PeripheralBatteryMonitor.Hid;
 
 namespace PeripheralBatteryMonitor.Providers.SteelSeries

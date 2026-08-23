@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Contracts;
 using PeripheralBatteryMonitor.Hid;
 using PeripheralBatteryMonitor.Providers;
 
@@ -16,8 +16,15 @@ namespace PeripheralBatteryMonitor
     /// of what is plugged in right now, cheap enough (a setupapi walk filtered to a handful of
     /// vendor ids) to re-run on every poll tick, which is also what gives plug/unplug
     /// handling for free.
+    ///
+    /// <b>internal, unlike the other three types at the project root.</b> Those three --
+    /// <see cref="BatteryDevice"/>, <see cref="DeviceManager"/> and
+    /// <see cref="IDeviceNotification"/> -- are exactly what the App project references, so
+    /// the root doubles as this assembly's public API. This one is a helper
+    /// <see cref="DeviceManager"/> drives and nothing outside Core touches; keeping it
+    /// internal makes that boundary the compiler's business rather than a convention.
     /// </summary>
-    public static class HidDeviceSource
+    internal static class HidDeviceSource
     {
         /// <summary>Every present HID interface that a registered spec claims. May be empty.</summary>
         public static List<HidInterfaceInfo> Discover()

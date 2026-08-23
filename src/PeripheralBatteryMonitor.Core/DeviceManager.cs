@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Windows.Devices.Enumeration;
-using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Contracts;
 using PeripheralBatteryMonitor.Hid;
 
 namespace PeripheralBatteryMonitor

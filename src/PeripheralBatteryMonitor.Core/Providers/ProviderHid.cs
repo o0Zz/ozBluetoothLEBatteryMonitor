@@ -1,5 +1,5 @@
 using System;
-using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Contracts;
 using PeripheralBatteryMonitor.Hid;
 
 namespace PeripheralBatteryMonitor.Providers
@@ -8,9 +8,9 @@ namespace PeripheralBatteryMonitor.Providers
     /// Shared plumbing for providers that reopen the exact HID interface a device was
     /// discovered on.
     ///
-    /// This lives in <c>Providers/</c> rather than in <c>Hid/</c> or <c>Abstractions/</c>
+    /// This lives in <c>Providers/</c> rather than in <c>Hid/</c> or <c>Contracts/</c>
     /// because it is the only layer that legitimately depends on both: it turns an
-    /// <see cref="IBatteryDeviceContext"/> (Abstractions) into a
+    /// <see cref="IBatteryDeviceContext"/> (Contracts) into a
     /// <see cref="HidInterfaceInfo"/> (Hid).
     /// Putting it in either of those would make one depend on the other and collapse the
     /// separation the two folders exist for.

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Contracts;
 using PeripheralBatteryMonitor.Providers.Logitech;
 using PeripheralBatteryMonitor.Providers.Razer;
 using PeripheralBatteryMonitor.Providers.SteelSeries;

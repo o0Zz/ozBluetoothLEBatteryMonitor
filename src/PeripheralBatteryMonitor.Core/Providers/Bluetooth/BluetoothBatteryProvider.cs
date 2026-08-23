@@ -1,5 +1,5 @@
 using System;
-using PeripheralBatteryMonitor.Abstractions;
+using PeripheralBatteryMonitor.Contracts;
 
 namespace PeripheralBatteryMonitor.Providers
 {

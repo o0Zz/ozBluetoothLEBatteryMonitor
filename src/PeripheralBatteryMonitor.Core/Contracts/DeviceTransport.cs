@@ -1,4 +1,4 @@
-namespace PeripheralBatteryMonitor.Abstractions
+namespace PeripheralBatteryMonitor.Contracts
 {
     /// <summary>
     /// How a tracked device is reached. Battery providers consult this to decide whether

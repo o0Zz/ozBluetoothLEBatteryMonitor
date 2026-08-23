@@ -1,7 +1,7 @@
-namespace PeripheralBatteryMonitor.Abstractions
+namespace PeripheralBatteryMonitor.Contracts
 {
     /// <summary>
-    /// Canonical keys into a device's property bag. Centralised here (Core) so both
+    /// Canonical keys into a device's property bag. Centralised in <c>Contracts/</c> so both
     /// the discovery layer (which requests them) and the providers (which read them) depend
     /// on this, not on each other.
     /// </summary>
