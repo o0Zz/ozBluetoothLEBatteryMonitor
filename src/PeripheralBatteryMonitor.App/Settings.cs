@@ -216,9 +216,11 @@ namespace PeripheralBatteryMonitor
                 foreach (BatteryDevice device in deviceDict.Values)
                     device.UpdateBatteryLevel();
 
-                if (checkBoxOneIconPerDevice.Checked && !deviceDict.IsEmpty)
-                    UpdateIconPerDevice(deviceDict);
-                else
+                    //Per-device mode can now come up empty even with devices tracked -- every
+                    //one of them may be disconnected. Falling through to the single icon then
+                    //is not cosmetic: with no per-device icon shown and the main one hidden,
+                    //the app would have no tray presence at all and no way to reach its menu.
+                if (!checkBoxOneIconPerDevice.Checked || deviceDict.IsEmpty || !UpdateIconPerDevice(deviceDict))
                     UpdateSingleIcon(deviceDict);
             }
             finally
@@ -238,6 +240,13 @@ namespace PeripheralBatteryMonitor
 
             foreach (var kv in deviceDict)
             {
+                    //A disconnected device keeps its last reading -- that is deliberate, the
+                    //Info window still shows it -- but the tray must not speak for it. Left in,
+                    //a mouse switched off at 20% holds the icon red and occupies a tooltip line
+                    //for as long as it stays paired, hiding whatever is actually in use.
+                if (!kv.Value.IsConnected())
+                    continue;
+
                 int level = kv.Value.GetBatteryLevel();
                 string name = kv.Value.GetName();
 
@@ -275,7 +284,12 @@ namespace PeripheralBatteryMonitor
 
             NotifyIcon.Icon = GetIconForBatteryLevel(theLowestBattery);
 
-            NotifyIcon.Text = FitTooltip(lines);
+                //theLowestBattery is still its 100 sentinel here, so the icon reads full. Say
+                //so in words rather than leaving an empty tooltip, which is indistinguishable
+                //from a full battery.
+            NotifyIcon.Text = (lines.Count == 0)
+                ? FitTooltip(new string[] { Strings.Get("tray.noDevice") })
+                : FitTooltip(lines);
         }
 
             //NotifyIcon.Text is a 64-character buffer *including* the terminator, so 63 is
@@ -334,17 +348,31 @@ namespace PeripheralBatteryMonitor
             return text.ToString();
         }
 
-        private void UpdateIconPerDevice(ConcurrentDictionary<string, BatteryDevice> deviceDict)
+        /// <summary>
+        /// One tray icon per device. Returns false when it ended up showing none -- every
+        /// device disconnected, or every one filtered out -- so the caller can put the single
+        /// icon back rather than leave the app with no tray presence.
+        /// </summary>
+        private bool UpdateIconPerDevice(ConcurrentDictionary<string, BatteryDevice> deviceDict)
         {
             NotifyIcon.Visible = false;
 
+            HashSet<string> shown = new HashSet<string>();
+
             foreach (var kv in deviceDict)
             {
+                    //Same rule as the single icon: the tray only speaks for devices that are
+                    //actually reachable.
+                if (!kv.Value.IsConnected())
+                    continue;
+
                 int level = kv.Value.GetBatteryLevel();
                 string name = kv.Value.GetName();
 
                 if (level < 0 && checkBoxHideUnknownBattery.Checked)
                     continue;
+
+                shown.Add(kv.Key);
 
                 NotifyIcon icon;
                 if (!deviceIcons.TryGetValue(kv.Key, out icon))
@@ -365,17 +393,28 @@ namespace PeripheralBatteryMonitor
                 NotifyLowBattery(kv.Key, name, level);
             }
 
-                //Drop icons for devices that disappeared from the manager
+                //Drop every icon this pass did not just paint. Keyed on what was shown, not
+                //on what the manager still tracks: a device that disconnects (or that
+                //"hide unknown battery" now filters out) stays in the dictionary, so the old
+                //ContainsKey test left its icon on the tray showing a stale percentage for
+                //ever. Devices that disappeared from the manager are covered by the same rule.
             foreach (string id in new List<string>(deviceIcons.Keys))
             {
-                if (deviceDict.ContainsKey(id))
+                if (shown.Contains(id))
                     continue;
 
                 deviceIcons[id].Visible = false;
                 deviceIcons[id].Dispose();
                 deviceIcons.Remove(id);
-                deviceLowBatteryNotificationDone.Remove(id);
+
+                    //Only forget the low-battery latch when the device is gone for good.
+                    //Clearing it on a mere disconnect would re-fire the balloon every time a
+                    //flat device wakes up.
+                if (!deviceDict.ContainsKey(id))
+                    deviceLowBatteryNotificationDone.Remove(id);
             }
+
+            return shown.Count > 0;
         }
 
         private void NotifyLowBattery(string id, string name, int level)

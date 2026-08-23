@@ -13,6 +13,7 @@ tray.exit = Beenden
 
 tray.device.known = {0}: {1} %
 tray.device.unknown = {0}: ?
+tray.noDevice = Kein Gerät verbunden
 notify.lowBattery = Akku NIEDRIG bei „{0}“ ({1} %)!
 
 # ---- Fenster „Einstellungen“ ----

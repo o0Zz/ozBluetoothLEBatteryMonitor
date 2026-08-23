@@ -13,6 +13,7 @@ tray.exit = Salir
 
 tray.device.known = {0}: {1} %
 tray.device.unknown = {0}: ?
+tray.noDevice = Ningún dispositivo conectado
 notify.lowBattery = Batería BAJA en «{0}» ({1} %)
 
 # ---- ventana de configuración ----

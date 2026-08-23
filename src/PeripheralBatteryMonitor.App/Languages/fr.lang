@@ -13,6 +13,7 @@ tray.exit = Quitter
 
 tray.device.known = {0} : {1} %
 tray.device.unknown = {0} : ?
+tray.noDevice = Aucun périphérique connecté
 notify.lowBattery = Batterie FAIBLE sur « {0} » ({1} %) !
 
 # ---- fenêtre Paramètres ----

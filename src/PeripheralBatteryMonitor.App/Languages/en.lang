@@ -19,6 +19,7 @@ tray.exit = Exit
 # {0} device name, {1} battery percentage
 tray.device.known = {0}: {1}%
 tray.device.unknown = {0}: ?
+tray.noDevice = No device connected
 notify.lowBattery = Battery LOW on '{0}' ({1}%) !
 
 # ---- Settings window ----
