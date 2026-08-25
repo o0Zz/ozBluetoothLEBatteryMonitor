@@ -3,7 +3,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace PeripheralBatteryMonitor
@@ -12,6 +11,11 @@ namespace PeripheralBatteryMonitor
     {
         /// <summary>Where every user setting lives. Program reads Language from here too.</summary>
         internal const string RegistryPath = "SOFTWARE\\PeripheralBatteryMonitor";
+
+            //Auto-start is the one setting that is not ours to name: Windows reads this key,
+            //and the value name is what identifies our entry in it.
+        private const string AutoStartPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+        private const string AutoStartValue = "PeripheralBatteryMonitor";
 
         private DeviceManager deviceManager = null;
         private Info infoForm = null;
@@ -33,21 +37,25 @@ namespace PeripheralBatteryMonitor
             Registry.CurrentUser.CreateSubKey(RegistryPath);
 
                 //Reload settings
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", false);
-            if (rk != null)
-                checkBoxStartup.Checked = rk.GetValue("PeripheralBatteryMonitor") != null;
+            using (RegistryKey run = Registry.CurrentUser.OpenSubKey(AutoStartPath, false))
+            {
+                if (run != null)
+                    checkBoxStartup.Checked = run.GetValue(AutoStartValue) != null;
+            }
 
-            rk = Registry.CurrentUser.OpenSubKey(RegistryPath, false);
+            using (RegistryKey rk = Registry.CurrentUser.OpenSubKey(RegistryPath, false))
+            {
+                numericUpDownRefreshPeriod.Value = (int)rk.GetValue("IntervalMin", 5);
+                checkBoxNotification.Checked = ((int)rk.GetValue("NotificationEnabled", 1)) != 0;
+                checkBoxScanForEver.Checked = ((int)rk.GetValue("AutomaticDetectionEnabled", 0)) != 0;
+                checkBoxOneIconPerDevice.Checked = ((int)rk.GetValue("OneIconPerDevice", 0)) != 0;
+                checkBoxHideUnknownBattery.Checked = ((int)rk.GetValue("HideUnknownBattery", 0)) != 0;
 
-            numericUpDownRefreshPeriod.Value = (int)rk.GetValue("IntervalMin", 5);
-            checkBoxNotification.Checked = ((int)rk.GetValue("NotificationEnabled", 1)) != 0;
-            checkBoxScanForEver.Checked = ((int)rk.GetValue("AutomaticDetectionEnabled", 0)) != 0;
-            checkBoxOneIconPerDevice.Checked = ((int)rk.GetValue("OneIconPerDevice", 0)) != 0;
-            checkBoxHideUnknownBattery.Checked = ((int)rk.GetValue("HideUnknownBattery", 0)) != 0;
+                    //Program already applied this language before the window was built; the
+                    //picker only has to show which one it was.
+                FillLanguages(Convert.ToString(rk.GetValue("Language", "")));
+            }
 
-                //Program already applied this language before the window was built; the picker
-                //only has to show which one it was.
-            FillLanguages(Convert.ToString(rk.GetValue("Language", "")));
             ApplyStrings();
 
                 //Instantiate everything
@@ -123,6 +131,20 @@ namespace PeripheralBatteryMonitor
 
                 //Room for the drop-down arrow, which is a system metric and so already scaled.
             comboBoxLanguage.Width = widest + SystemInformation.VerticalScrollBarWidth + comboBoxLanguage.Margin.Horizontal;
+        }
+
+        /// <summary>
+        /// Persists one setting. There is no OK/Cancel on this form -- every handler writes the
+        /// moment its control changes, so this is the whole of persistence, which is reason
+        /// enough to have it in one place that cannot forget to close the key.
+        /// </summary>
+        private static void SaveSetting(string name, object value, RegistryValueKind kind = RegistryValueKind.DWord)
+        {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RegistryPath, true))
+            {
+                if (key != null)
+                    key.SetValue(name, value, kind);
+            }
         }
 
         protected override void SetVisibleCore(bool value)
@@ -229,55 +251,72 @@ namespace PeripheralBatteryMonitor
             }
         }
 
+        /// <summary>
+        /// May the tray speak for this device on this pass?
+        ///
+        /// A disconnected device keeps its last reading -- that is deliberate, and the Info
+        /// window still lists it -- but the tray must not report it. Left in, a mouse switched
+        /// off at 20% holds the icon red and occupies a tooltip line for as long as it stays
+        /// paired, hiding whatever is actually in use.
+        ///
+        /// Shared by both icon modes so the two cannot drift apart on which devices count.
+        /// </summary>
+        private bool TrayReports(BatteryDevice device)
+        {
+            if (!device.IsConnected())
+                return false;
+
+            return device.GetBatteryLevel() >= 0 || !checkBoxHideUnknownBattery.Checked;
+        }
+
+        /// <summary>One device's tooltip line. Both icon modes word it the same way.</summary>
+        private static TrayTooltip.Line TrayLine(string name, int level)
+        {
+            return new TrayTooltip.Line(name, (level < 0)
+                ? Strings.Format("tray.device.unknown", name)
+                : Strings.Format("tray.device.known", name, level));
+        }
+
         private void UpdateSingleIcon(ConcurrentDictionary<string, BatteryDevice> deviceDict)
         {
             ClearPerDeviceIcons();
             NotifyIcon.Visible = true;
 
             int theLowestBattery = 100;
-            List<KeyValuePair<int, TooltipLine>> known = new List<KeyValuePair<int, TooltipLine>>();
-            List<TooltipLine> unknown = new List<TooltipLine>();
+            List<KeyValuePair<int, TrayTooltip.Line>> known = new List<KeyValuePair<int, TrayTooltip.Line>>();
+            List<TrayTooltip.Line> unknown = new List<TrayTooltip.Line>();
 
             foreach (var kv in deviceDict)
             {
-                    //A disconnected device keeps its last reading -- that is deliberate, the
-                    //Info window still shows it -- but the tray must not speak for it. Left in,
-                    //a mouse switched off at 20% holds the icon red and occupies a tooltip line
-                    //for as long as it stays paired, hiding whatever is actually in use.
-                if (!kv.Value.IsConnected())
+                if (!TrayReports(kv.Value))
                     continue;
 
                 int level = kv.Value.GetBatteryLevel();
                 string name = kv.Value.GetName();
 
-                if (level < 0 && checkBoxHideUnknownBattery.Checked)
-                    continue;
-
                 if (level < 0)
                 {
-                    unknown.Add(new TooltipLine(name,
-                        Strings.Format("tray.device.unknown", name)));
+                    unknown.Add(TrayLine(name, level));
                 }
                 else
                 {
                     if (level < theLowestBattery)
                         theLowestBattery = level;
 
-                    known.Add(new KeyValuePair<int, TooltipLine>(level,
-                        new TooltipLine(name, Strings.Format("tray.device.known", name, level))));
+                    known.Add(new KeyValuePair<int, TrayTooltip.Line>(level, TrayLine(name, level)));
                 }
 
                 NotifyLowBattery(kv.Key, name, level);
             }
 
                 //The tooltip holds 63 characters and a device list can easily exceed that.
-                //FitTooltip normally keeps every reading by shortening names; this order is the
-                //fallback priority only when even the shortest marked names cannot all fit.
+                //TrayTooltip.Fit normally keeps every reading by shortening names; this order is
+                //the fallback priority only when even the shortest marked names cannot all fit.
                 //The lowest known battery comes first because that is what the icon represents;
                 //devices still reading "?" carry less information and queue behind it.
             known.Sort((a, b) => a.Key.CompareTo(b.Key));
 
-            List<TooltipLine> lines = new List<TooltipLine>(known.Count + unknown.Count);
+            List<TrayTooltip.Line> lines = new List<TrayTooltip.Line>(known.Count + unknown.Count);
             foreach (var entry in known)
                 lines.Add(entry.Value);
             lines.AddRange(unknown);
@@ -287,151 +326,10 @@ namespace PeripheralBatteryMonitor
                 //theLowestBattery is still its 100 sentinel here, so the icon reads full. Say
                 //so in words rather than leaving an empty tooltip, which is indistinguishable
                 //from a full battery.
-            NotifyIcon.Text = (lines.Count == 0)
-                ? FitTooltip(new TooltipLine[] {
-                    new TooltipLine(null, Strings.Get("tray.noDevice")) })
-                : FitTooltip(lines);
-        }
-
-            //NotifyIcon.Text is a 64-character buffer *including* the terminator, so 63 is
-            //the most WinForms accepts -- it throws ArgumentOutOfRangeException at 64, which
-            //on the polling tick is an unhandled exception that kills the tray app. The old
-            //Math.Min(length, 64) was off by exactly one and fired as soon as enough devices
-            //were paired for their names to fill the tooltip.
-        private const int TooltipLimit = 63;
-        private const string TooltipMore = "…";
-
-        private sealed class TooltipLine
-        {
-            internal readonly string Name;
-            internal readonly string Text;
-            private readonly int nameIndex;
-
-            internal TooltipLine(string name, string text)
-            {
-                Name = name ?? "";
-                Text = text ?? "";
-                nameIndex = Name.Length == 0
-                    ? -1
-                    : Text.IndexOf(Name, StringComparison.Ordinal);
-            }
-
-            internal int NameLength { get { return nameIndex < 0 ? 0 : Name.Length; } }
-
-            internal int MinimumLength
-            {
-                get { return nameIndex < 0 ? Text.Length : Text.Length - Name.Length + 1; }
-            }
-
-            internal string Render(int nameLength)
-            {
-                if (nameIndex < 0 || nameLength >= Name.Length)
-                    return Text;
-
-                string shortened = nameLength <= 1
-                    ? TooltipMore
-                    : Name.Substring(0, nameLength - TooltipMore.Length) + TooltipMore;
-                return Text.Substring(0, nameIndex) + shortened +
-                    Text.Substring(nameIndex + Name.Length);
-            }
-        }
-
-        /// <summary>
-        /// Joins tooltip lines into what NotifyIcon.Text can actually hold. When all readings
-        /// fit but the full device names do not, shortens names fairly and marks every shortened
-        /// one with an ellipsis so each device and percentage remains represented.
-        ///
-        /// Only an unusually large number of devices can make even the shortest marked names
-        /// exceed the 63-character limit. That case falls back to the caller's priority order
-        /// and a final ellipsis line.
-        /// </summary>
-        private static string FitTooltip(IList<TooltipLine> lines)
-        {
             if (lines.Count == 0)
-                return "";
+                lines.Add(new TrayTooltip.Line(null, Strings.Get("tray.noDevice")));
 
-            string all = JoinLines(lines, null);
-            if (all.Length <= TooltipLimit)
-                return all;
-
-            int minimum = lines.Count - 1; //newline separators
-            foreach (TooltipLine line in lines)
-                minimum += line.MinimumLength;
-
-            if (minimum <= TooltipLimit)
-            {
-                int[] nameLengths = new int[lines.Count];
-                for (int i = 0; i < lines.Count; i++)
-                    nameLengths[i] = lines[i].NameLength == 0 ? 0 : 1;
-
-                int remaining = TooltipLimit - minimum;
-                bool expanded = true;
-                while (remaining > 0 && expanded)
-                {
-                    expanded = false;
-                    for (int i = 0; i < lines.Count && remaining > 0; i++)
-                    {
-                        if (nameLengths[i] >= lines[i].NameLength)
-                            continue;
-
-                        nameLengths[i]++;
-                        remaining--;
-                        expanded = true;
-                    }
-                }
-
-                return JoinLines(lines, nameLengths);
-            }
-
-            int taken;
-            string text = TakeLines(lines, TooltipLimit, out taken);
-            if (taken == lines.Count)
-                return text;
-
-                //Room for the "…" line has to be reserved before the fit, not carved out of it.
-            text = TakeLines(lines, TooltipLimit - TooltipMore.Length - 1, out taken);
-            if (taken == 0)
-            {
-                string first = lines[0].Text;
-                return first.Substring(0, TooltipLimit - TooltipMore.Length) + TooltipMore;
-            }
-
-            return text + "\n" + TooltipMore;
-        }
-
-        private static string JoinLines(IList<TooltipLine> lines, int[] nameLengths)
-        {
-            StringBuilder text = new StringBuilder();
-            for (int i = 0; i < lines.Count; i++)
-            {
-                if (i != 0)
-                    text.Append('\n');
-                text.Append(lines[i].Render(nameLengths == null
-                    ? lines[i].NameLength
-                    : nameLengths[i]));
-            }
-            return text.ToString();
-        }
-
-        private static string TakeLines(IList<TooltipLine> lines, int limit, out int taken)
-        {
-            StringBuilder text = new StringBuilder();
-            taken = 0;
-
-            foreach (TooltipLine line in lines)
-            {
-                int cost = (text.Length == 0 ? 0 : 1) + line.Text.Length;
-                if (text.Length + cost > limit)
-                    break;
-
-                if (text.Length != 0)
-                    text.Append('\n');
-
-                text.Append(line.Text);
-                taken++;
-            }
-
-            return text.ToString();
+            NotifyIcon.Text = TrayTooltip.Fit(lines);
         }
 
         /// <summary>
@@ -447,16 +345,11 @@ namespace PeripheralBatteryMonitor
 
             foreach (var kv in deviceDict)
             {
-                    //Same rule as the single icon: the tray only speaks for devices that are
-                    //actually reachable.
-                if (!kv.Value.IsConnected())
+                if (!TrayReports(kv.Value))
                     continue;
 
                 int level = kv.Value.GetBatteryLevel();
                 string name = kv.Value.GetName();
-
-                if (level < 0 && checkBoxHideUnknownBattery.Checked)
-                    continue;
 
                 shown.Add(kv.Key);
 
@@ -471,10 +364,7 @@ namespace PeripheralBatteryMonitor
                 }
 
                 icon.Icon = GetIconForBatteryLevel(level);
-                string tooltip = (level < 0)
-                    ? Strings.Format("tray.device.unknown", name)
-                    : Strings.Format("tray.device.known", name, level);
-                icon.Text = FitTooltip(new TooltipLine[] { new TooltipLine(name, tooltip) });
+                icon.Text = TrayTooltip.Fit(new TrayTooltip.Line[] { TrayLine(name, level) });
 
                 NotifyLowBattery(kv.Key, name, level);
             }
@@ -592,8 +482,7 @@ namespace PeripheralBatteryMonitor
         {
             if (isInitializing) return;
 
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
-            rk.SetValue("IntervalMin", numericUpDownRefreshPeriod.Value, RegistryValueKind.DWord);
+            SaveSetting("IntervalMin", (int)numericUpDownRefreshPeriod.Value);
 
             IconTimer.Stop();
             IconTimer.Interval = (int)(numericUpDownRefreshPeriod.Value * 60 * 1000);
@@ -603,19 +492,20 @@ namespace PeripheralBatteryMonitor
         {
             if (isInitializing) return;
 
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            if (checkBoxStartup.Checked)
-                rk.SetValue("PeripheralBatteryMonitor", Application.ExecutablePath);
-            else
-                rk.DeleteValue("PeripheralBatteryMonitor", false);
+            using (RegistryKey run = Registry.CurrentUser.OpenSubKey(AutoStartPath, true))
+            {
+                if (checkBoxStartup.Checked)
+                    run.SetValue(AutoStartValue, Application.ExecutablePath);
+                else
+                    run.DeleteValue(AutoStartValue, false);
+            }
         }
 
         private void checkBoxScanForEver_CheckedChanged(object sender, EventArgs e)
         {
             if (isInitializing) return;
 
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
-            rk.SetValue("AutomaticDetectionEnabled", checkBoxScanForEver.Checked ? 1 : 0);
+            SaveSetting("AutomaticDetectionEnabled", checkBoxScanForEver.Checked ? 1 : 0);
 
                 //Restart the watchers so the new flag takes effect immediately
             deviceManager.stopScan();
@@ -626,16 +516,14 @@ namespace PeripheralBatteryMonitor
         {
             if (isInitializing) return;
 
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
-            rk.SetValue("NotificationEnabled", checkBoxNotification.Checked ? 1 : 0);
+            SaveSetting("NotificationEnabled", checkBoxNotification.Checked ? 1 : 0);
         }
 
         private void checkBoxOneIconPerDevice_CheckedChanged(object sender, EventArgs e)
         {
             if (isInitializing) return;
 
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
-            rk.SetValue("OneIconPerDevice", checkBoxOneIconPerDevice.Checked ? 1 : 0);
+            SaveSetting("OneIconPerDevice", checkBoxOneIconPerDevice.Checked ? 1 : 0);
             UpdateIcon();
         }
 
@@ -646,8 +534,7 @@ namespace PeripheralBatteryMonitor
             Strings.Language chosen = comboBoxLanguage.SelectedItem as Strings.Language;
             string code = chosen == null ? "" : chosen.Code;
 
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
-            rk.SetValue("Language", code, RegistryValueKind.String);
+            SaveSetting("Language", code, RegistryValueKind.String);
 
             Strings.Use(code);
 
@@ -740,8 +627,7 @@ namespace PeripheralBatteryMonitor
         {
             if (isInitializing) return;
 
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(RegistryPath, true);
-            rk.SetValue("HideUnknownBattery", checkBoxHideUnknownBattery.Checked ? 1 : 0);
+            SaveSetting("HideUnknownBattery", checkBoxHideUnknownBattery.Checked ? 1 : 0);
             UpdateIcon();
         }
     }

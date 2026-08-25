@@ -35,11 +35,6 @@ namespace PeripheralBatteryMonitor.Providers
             specs.Add(spec);
         }
 
-        public static IList<HidDeviceSpec> GetSpecs()
-        {
-            return specs;
-        }
-
         /// <summary>
         /// The distinct vendor ids across every spec, so enumeration can skip opening HID
         /// interfaces that could never match.

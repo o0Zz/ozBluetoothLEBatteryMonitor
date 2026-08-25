@@ -173,6 +173,9 @@ namespace PeripheralBatteryMonitor
                 deviceName = name;
         }
 
+            //The one implementation. IBatteryDeviceContext.TryGetProperty below is the same
+            //lookup seen through the provider-facing contract, and delegates here rather than
+            //repeating it.
         internal bool TryGetProperty(string key, out object value)
         {
             return propertyCache.TryGetValue(key, out value);
@@ -202,7 +205,7 @@ namespace PeripheralBatteryMonitor
 
         bool IBatteryDeviceContext.TryGetProperty(string key, out object value)
         {
-            return propertyCache.TryGetValue(key, out value);
+            return TryGetProperty(key, out value);
         }
     }
 }

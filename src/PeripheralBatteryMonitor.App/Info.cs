@@ -1,5 +1,4 @@
-﻿using PeripheralBatteryMonitor;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Windows.Forms;
 
@@ -102,8 +101,6 @@ namespace PeripheralBatteryMonitor
         {
             base.Show();
 
-            this.Cursor = new Cursor(Cursor.Current.Handle);
-
             this.Left = Cursor.Position.X - this.Width;
             this.Top = Cursor.Position.Y - this.Height - 20;
             
@@ -146,7 +143,6 @@ namespace PeripheralBatteryMonitor
             foreach (BatteryDevice device in deviceDict.Values)
             {
                 int theBatteryLevel = device.GetBatteryLevel();
-                string theName = device.GetName();
                 lastUpdated = device.GetLastUpdatedTime();
 
                 if (theBatteryLevel < 0 && hideUnknownBattery != null && hideUnknownBattery())

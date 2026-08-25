@@ -24,9 +24,12 @@ namespace PeripheralBatteryMonitor
         private const string BLE_PROTOCOL_GUID = "{bb7bb05e-5972-42b5-94fc-76eaa7084d49}";
         private const string BREDR_PROTOCOL_GUID = "{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}";
 
+            //AEP category value that marks a phone. See ReconcileSiblingNames.
+        private const string PHONE_CATEGORY = "Communication.Phone";
+
         private static readonly string[] requestedProperties = new string[]
         {
-            "System.Devices.Aep.DeviceAddress",
+            DeviceProperties.PROP_AEP_DEVICE_ADDRESS,
             "System.Devices.Aep.Bluetooth.Le.IsConnectable",
             DeviceProperties.PROP_AEP_IS_PAIRED,
             DeviceProperties.PROP_AEP_IS_CONNECTED,
@@ -128,7 +131,7 @@ namespace PeripheralBatteryMonitor
                 BatteryDevice device = new BatteryDevice(devInfo, transport);
                 if (deviceDict.TryAdd(devInfo.Id, device))
                 {
-                    ReconcilePhoneNames(device);
+                    ReconcileSiblingNames(device);
                     this.deviceNotification.OnNewDevice(device);
                 }
             };
@@ -175,68 +178,75 @@ namespace PeripheralBatteryMonitor
         }
 
         /// <summary>
-        /// Windows can expose one phone through both Bluetooth transports under the same AEP
-        /// container. On iOS the BLE endpoint may use an opaque local name while the Classic
-        /// endpoint carries the useful device name. Once both have appeared, use the Classic
-        /// sibling's name for the BLE endpoint too.
+        /// Windows exposes a dual-mode phone as two association endpoints, one per transport,
+        /// rolled up under a single AEP container. On iOS the Classic endpoint carries the name
+        /// the user chose while the BLE one advertises an opaque local name, so once both have
+        /// appeared the Classic name is copied onto the BLE sibling. No device-name pattern and
+        /// no Apple-specific value is assumed.
         ///
-        /// Container and phone category establish that the endpoints belong to the same
-        /// physical phone; no device-name pattern or Apple-specific value is assumed.
+        /// <b>The container is what establishes that two endpoints are one physical device.</b>
+        /// For a paired device it is the real PnP container id -- verified by dumping a paired
+        /// device's AEP bag and finding the same GUID on its nodes in the device tree. An
+        /// *unpaired* endpoint instead gets one synthesised per protocol and address, so the two
+        /// transports of one unpaired device do not share it; that costs nothing here, since
+        /// only paired devices are tracked at all.
+        ///
+        /// The phone category only narrows the scope, and is required on <b>either</b> endpoint
+        /// rather than on both: the container already proves same-device, while the BLE endpoint
+        /// of a phone is not reliably categorised, and demanding it there is enough on its own to
+        /// silently disable the whole reconcile.
+        ///
+        /// This makes the two entries read alike; it does not merge them. A phone still occupies
+        /// two rows and two tooltip lines -- see the note in CLAUDE.md.
         /// </summary>
-        private void ReconcilePhoneNames(BatteryDevice added)
+        private void ReconcileSiblingNames(BatteryDevice added)
         {
-            Guid containerId;
-            if (!TryGetContainerId(added, out containerId) || !IsPhone(added))
+            Guid container;
+            if (!TryGetContainerId(added, out container))
                 return;
 
+            bool anyPhone = false;
             string classicName = null;
-            foreach (BatteryDevice candidate in deviceDict.Values)
+            List<BatteryDevice> lowEnergySiblings = new List<BatteryDevice>();
+
+            foreach (BatteryDevice sibling in deviceDict.Values)
             {
-                Guid candidateContainer;
-                if (!TryGetContainerId(candidate, out candidateContainer) ||
-                    candidateContainer != containerId || !IsPhone(candidate))
+                Guid siblingContainer;
+                if (!TryGetContainerId(sibling, out siblingContainer) || siblingContainer != container)
                     continue;
 
-                if (candidate.GetTransport() == DeviceTransport.BluetoothClassic &&
-                    !String.IsNullOrWhiteSpace(candidate.GetName()))
-                {
-                    classicName = candidate.GetName();
-                    break;
-                }
+                anyPhone |= IsPhone(sibling);
+
+                if (sibling.GetTransport() == DeviceTransport.BluetoothLowEnergy)
+                    lowEnergySiblings.Add(sibling);
+                else if (sibling.GetTransport() == DeviceTransport.BluetoothClassic &&
+                         classicName == null && !String.IsNullOrWhiteSpace(sibling.GetName()))
+                    classicName = sibling.GetName();
             }
 
-            if (classicName == null)
+            if (!anyPhone || classicName == null)
                 return;
 
-            foreach (BatteryDevice candidate in deviceDict.Values)
-            {
-                Guid candidateContainer;
-                if (!TryGetContainerId(candidate, out candidateContainer) ||
-                    candidateContainer != containerId || !IsPhone(candidate))
-                    continue;
-
-                if (candidate.GetTransport() == DeviceTransport.BluetoothLowEnergy)
-                    candidate.UpdateName(classicName);
-            }
+            foreach (BatteryDevice lowEnergy in lowEnergySiblings)
+                lowEnergy.UpdateName(classicName);
         }
 
         private static bool TryGetContainerId(BatteryDevice device, out Guid containerId)
         {
-            object value;
-            if (device.TryGetProperty(DeviceProperties.PROP_AEP_CONTAINER_ID, out value))
-            {
-                if (value is Guid)
-                {
-                    containerId = (Guid)value;
-                    return containerId != Guid.Empty;
-                }
-
-                if (value != null && Guid.TryParse(value.ToString(), out containerId))
-                    return containerId != Guid.Empty;
-            }
-
             containerId = Guid.Empty;
-            return false;
+
+            object value;
+            if (!device.TryGetProperty(DeviceProperties.PROP_AEP_CONTAINER_ID, out value) || value == null)
+                return false;
+
+                //WinRT delivers this as a boxed Guid; the string form is parsed too rather
+                //than depending on that.
+            if (value is Guid)
+                containerId = (Guid)value;
+            else if (!Guid.TryParse(value.ToString(), out containerId))
+                return false;
+
+            return containerId != Guid.Empty;
         }
 
         private static bool IsPhone(BatteryDevice device)
@@ -251,7 +261,7 @@ namespace PeripheralBatteryMonitor
 
             foreach (string category in categories)
             {
-                if (String.Equals(category, "Communication.Phone", StringComparison.OrdinalIgnoreCase))
+                if (String.Equals(category, PHONE_CATEGORY, StringComparison.OrdinalIgnoreCase))
                     return true;
             }
             return false;
