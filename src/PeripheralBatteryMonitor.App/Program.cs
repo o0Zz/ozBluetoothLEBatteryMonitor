@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
@@ -7,11 +8,24 @@ namespace PeripheralBatteryMonitor
 {
     static class Program
     {
+        private const string SingleInstanceMutex = @"Local\o0Zz.PeripheralBatteryMonitor";
+
         [STAThread]
         static void Main()
         {
-            EmbeddedAssemblies.Install();
-            Run();
+            bool isFirstInstance;
+            using (Mutex mutex = new Mutex(true, SingleInstanceMutex, out isFirstInstance))
+            {
+                if (!isFirstInstance)
+                    return;
+
+                EmbeddedAssemblies.Install();
+                Run();
+
+                    //Keep ownership for the complete message-loop lifetime even though the
+                    //local itself is otherwise unused after construction.
+                GC.KeepAlive(mutex);
+            }
         }
 
             //Split out and never inlined: Run mentions Settings, whose fields are Core types,

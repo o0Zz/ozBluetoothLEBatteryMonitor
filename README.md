@@ -26,7 +26,7 @@ Configure how often the app polls battery levels (1 min – 24 h).
 Optionally show a separate tray icon for every paired device instead of one aggregate icon for the lowest battery. Each icon displays its own battery glyph and tooltip.
 
 **Multiple languages**
-English, French, German, Italian and Spanish. The app follows Windows by default; pick a language explicitly in Settings and it applies straight away.
+English, French, German, Italian, Spanish and Simplified Chinese. The app follows Windows by default; pick a language explicitly in Settings and it applies straight away.
 
 **Hide unknown-battery devices**
 Optionally hide devices whose battery cannot be read from the tray, balloon tooltip and Info popup.
@@ -63,7 +63,7 @@ When the application is running, right-click the battery icon in the system tray
   - How often the application polls battery levels for every tracked device, from 1 minute to 24 hours.
 
 - [x] **Language [same as Windows by default]**
-  - English, French, German, Italian or Spanish. Applies immediately — no restart.
+  - English, French, German, Italian, Spanish or Simplified Chinese. Applies immediately — no restart.
 
 **Devices and tray icons**
 
@@ -104,9 +104,9 @@ When the application is running, right-click the battery icon in the system tray
   - Exit and restart the application if the problem persists
     > A notification fires once per low-battery transition (when a device drops to ≤ 20% after being above it). It won't repeat every refresh while the device stays low.
 
-- **Duplicate tray icons**
-  - Exit any extra instances and start the application once
-    > Running the app twice produces two sets of icons. Right-click each tray icon → *Exit*, then start a single instance. Note: the *Show one tray icon per device* setting intentionally creates one icon per device — that's not a duplicate.
+- **Multiple tray icons**
+  - Check whether *Show one tray icon per device* is enabled
+    > The application allows only one running instance. Multiple live icons are expected only when the per-device icon setting is enabled; after an abnormal exit, a stale icon disappears when Windows refreshes the tray area.
 
 ## Build from source
 

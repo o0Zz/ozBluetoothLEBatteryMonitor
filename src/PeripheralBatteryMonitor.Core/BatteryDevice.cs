@@ -167,6 +167,17 @@ namespace PeripheralBatteryMonitor
             return deviceName;
         }
 
+        internal void UpdateName(string name)
+        {
+            if (!String.IsNullOrWhiteSpace(name))
+                deviceName = name;
+        }
+
+        internal bool TryGetProperty(string key, out object value)
+        {
+            return propertyCache.TryGetValue(key, out value);
+        }
+
         public DeviceTransport GetTransport()
         {
             return transport;
