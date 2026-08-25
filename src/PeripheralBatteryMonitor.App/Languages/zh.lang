@@ -1,0 +1,74 @@
+# PeripheralBatteryMonitor — 简体中文。
+# 缺少的条目会回退为英文（见 en.lang）。
+
+@name = 简体中文
+
+app.name = Peripheral Battery Monitor
+
+# ---- 系统托盘 ----
+tray.refresh = 刷新
+tray.settings = 设置
+tray.about = 关于
+tray.exit = 退出
+
+tray.device.known = {0}：{1}%
+tray.device.unknown = {0}：未知
+tray.noDevice = 未连接设备
+notify.lowBattery = “{0}”的电量低（{1}%）！
+
+# ---- 设置窗口 ----
+settings.title = Peripheral Battery Monitor
+settings.group.general = 常规
+settings.group.devices = 设备与托盘图标
+
+settings.startup = 开机时启动应用
+settings.startup.hint = 随 Windows 启动并直接驻留系统托盘。默认关闭。
+
+settings.notifications = 启用低电量通知
+settings.notifications.hint = 每当设备电量降至 20% 或以下时显示一次气泡通知；电量持续处于该范围时，不会在每次刷新时重复提醒。
+
+settings.refresh = 刷新间隔：
+settings.refresh.unit = 分钟
+settings.refresh.hint = 每隔多久轮询所有跟踪的设备。可设置为 1 分钟至 24 小时。
+
+settings.language = 语言：
+settings.language.auto = 跟随 Windows
+settings.language.hint = 立即生效。设备上报的名称保持原样。
+
+settings.autoDetect = 自动检测新设备
+settings.autoDetect.hint = 持续监测新配对的蓝牙设备。关闭后，仅跟踪应用启动时已配对的设备；USB 接收器始终会被检测。
+
+settings.oneIconPerDevice = 每台设备显示一个托盘图标
+settings.oneIconPerDevice.hint = 关闭时只显示一个图标，展示所有设备中的最低电量；工具提示会列出各台设备。
+
+settings.hideUnknown = 隐藏电量未知的设备
+settings.hideUnknown.hint = 部分设备不会向 Windows 上报电量。启用后，这些设备将不会出现在托盘、工具提示和设备列表中。
+
+# ---- 设备列表 ----
+info.column.device = 设备
+info.column.state = 状态
+info.column.battery = 电量
+info.state.connected = 已连接
+info.state.disconnected = 已断开
+info.lastUpdated = 上次更新：
+info.never = -
+
+# ---- 关于窗口 ----
+about.title = 关于 Peripheral Battery Monitor
+about.version = 版本 {0}
+about.what = 在 Windows 系统托盘中显示无线外设的剩余电量。托盘图标会显示所有跟踪设备中的最低电量；每当某台设备的电量降至 20% 或以下时，会显示一次气泡通知。
+about.supported = 支持的设备
+about.device.ble = 蓝牙低功耗（BLE）— 耳塞、运动手环、BLE 鼠标和键盘
+about.device.classic = 经典蓝牙 / BR-EDR — 耳机、Windows 上的 AirPods
+about.device.apple = Apple Magic Mouse、Trackpad 和 Keyboard
+about.device.logitech = 使用专用 USB 接收器的 Logitech LIGHTSPEED 设备
+about.device.steelseries = SteelSeries Arctis Nova 5 / 7 无线耳机
+about.device.razer = 使用 HyperSpeed 接收器或蓝牙的 Razer 无线鼠标
+about.author = 作者 o0Zz — {0}
+about.link.failed = 无法打开页面
+
+# ---- 按钮 ----
+button.refresh = 刷新
+button.ok = 确定
+button.close = 关闭
+button.about = 关于...

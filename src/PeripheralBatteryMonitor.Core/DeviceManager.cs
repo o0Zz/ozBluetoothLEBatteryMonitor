@@ -30,6 +30,8 @@ namespace PeripheralBatteryMonitor
             "System.Devices.Aep.Bluetooth.Le.IsConnectable",
             DeviceProperties.PROP_AEP_IS_PAIRED,
             DeviceProperties.PROP_AEP_IS_CONNECTED,
+            DeviceProperties.PROP_AEP_CONTAINER_ID,
+            DeviceProperties.PROP_AEP_CATEGORY,
             DeviceProperties.PROP_BATTERY_LEVEL,
         };
 
@@ -124,8 +126,11 @@ namespace PeripheralBatteryMonitor
                     return;
 
                 BatteryDevice device = new BatteryDevice(devInfo, transport);
-                deviceDict.TryAdd(devInfo.Id, device);
-                this.deviceNotification.OnNewDevice(device);
+                if (deviceDict.TryAdd(devInfo.Id, device))
+                {
+                    ReconcilePhoneNames(device);
+                    this.deviceNotification.OnNewDevice(device);
+                }
             };
 
             watcher.Updated += (DeviceWatcher deviceWatcher, DeviceInformationUpdate devUpdate) =>
@@ -167,6 +172,89 @@ namespace PeripheralBatteryMonitor
             };
 
             return watcher;
+        }
+
+        /// <summary>
+        /// Windows can expose one phone through both Bluetooth transports under the same AEP
+        /// container. On iOS the BLE endpoint may use an opaque local name while the Classic
+        /// endpoint carries the useful device name. Once both have appeared, use the Classic
+        /// sibling's name for the BLE endpoint too.
+        ///
+        /// Container and phone category establish that the endpoints belong to the same
+        /// physical phone; no device-name pattern or Apple-specific value is assumed.
+        /// </summary>
+        private void ReconcilePhoneNames(BatteryDevice added)
+        {
+            Guid containerId;
+            if (!TryGetContainerId(added, out containerId) || !IsPhone(added))
+                return;
+
+            string classicName = null;
+            foreach (BatteryDevice candidate in deviceDict.Values)
+            {
+                Guid candidateContainer;
+                if (!TryGetContainerId(candidate, out candidateContainer) ||
+                    candidateContainer != containerId || !IsPhone(candidate))
+                    continue;
+
+                if (candidate.GetTransport() == DeviceTransport.BluetoothClassic &&
+                    !String.IsNullOrWhiteSpace(candidate.GetName()))
+                {
+                    classicName = candidate.GetName();
+                    break;
+                }
+            }
+
+            if (classicName == null)
+                return;
+
+            foreach (BatteryDevice candidate in deviceDict.Values)
+            {
+                Guid candidateContainer;
+                if (!TryGetContainerId(candidate, out candidateContainer) ||
+                    candidateContainer != containerId || !IsPhone(candidate))
+                    continue;
+
+                if (candidate.GetTransport() == DeviceTransport.BluetoothLowEnergy)
+                    candidate.UpdateName(classicName);
+            }
+        }
+
+        private static bool TryGetContainerId(BatteryDevice device, out Guid containerId)
+        {
+            object value;
+            if (device.TryGetProperty(DeviceProperties.PROP_AEP_CONTAINER_ID, out value))
+            {
+                if (value is Guid)
+                {
+                    containerId = (Guid)value;
+                    return containerId != Guid.Empty;
+                }
+
+                if (value != null && Guid.TryParse(value.ToString(), out containerId))
+                    return containerId != Guid.Empty;
+            }
+
+            containerId = Guid.Empty;
+            return false;
+        }
+
+        private static bool IsPhone(BatteryDevice device)
+        {
+            object value;
+            if (!device.TryGetProperty(DeviceProperties.PROP_AEP_CATEGORY, out value))
+                return false;
+
+            string[] categories = value as string[];
+            if (categories == null)
+                return false;
+
+            foreach (string category in categories)
+            {
+                if (String.Equals(category, "Communication.Phone", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         private void RemoveDevice(string id)

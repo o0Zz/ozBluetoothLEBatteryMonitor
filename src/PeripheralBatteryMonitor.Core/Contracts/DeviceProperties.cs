@@ -24,6 +24,8 @@ namespace PeripheralBatteryMonitor.Contracts
         public const string PROP_AEP_IS_CONNECTED = "System.Devices.Aep.IsConnected";
         public const string PROP_AEP_IS_PAIRED = "System.Devices.Aep.IsPaired";
         public const string PROP_AEP_DEVICE_ADDRESS = "System.Devices.Aep.DeviceAddress";
+        public const string PROP_AEP_CONTAINER_ID = "System.Devices.Aep.ContainerId";
+        public const string PROP_AEP_CATEGORY = "System.Devices.Aep.Category";
 
         /* ---- Keys this app synthesises for HID-discovered devices ---- */
 
