@@ -35,25 +35,39 @@ namespace PeripheralBatteryMonitor.Providers
         {
             if (ctx.Transport != DeviceTransport.BluetoothLowEnergy || !supportGattBattery)
                 return null;
+
+            try
+            {
                 //Definitive + self-healing: connect and confirm the battery characteristic
                 //exists, re-establishing the link if it dropped since we bound.
-            if (!IsGattConnected())
-                ConnectAndDiscover(ctx);
-            if (!IsGattConnected())
-                return null;
+                if (!IsGattConnected())
+                    ConnectAndDiscover(ctx);
+                if (!IsGattConnected())
+                    return null;
 
-            Task<GattReadResult> gattReadTask = gattCharacteristic.ReadValueAsync(BluetoothCacheMode.Uncached).AsTask();
-            if (gattReadTask.Wait(bleReadTimeoutMs))
-            {
-                if (GattCommunicationStatus.Success.Equals(gattReadTask.Result.Status))
+                Task<GattReadResult> gattReadTask = gattCharacteristic.ReadValueAsync(BluetoothCacheMode.Uncached).AsTask();
+                if (gattReadTask.Wait(bleReadTimeoutMs))
                 {
-                    IBuffer buffer = gattReadTask.Result.Value;
-                    byte[] data = new byte[buffer.Length];
-                    DataReader.FromBuffer(buffer).ReadBytes(data);
-                    return data[0];
+                    if (GattCommunicationStatus.Success.Equals(gattReadTask.Result.Status))
+                    {
+                        IBuffer buffer = gattReadTask.Result.Value;
+                        byte[] data = new byte[buffer.Length];
+                        DataReader.FromBuffer(buffer).ReadBytes(data);
+                        return data[0];
+                    }
                 }
+                return null;
             }
-            return null;
+            catch (ObjectDisposedException)
+            {
+                ResetConnection();
+                return null;
+            }
+            catch (AggregateException ex) when (IsClosedObjectFailure(ex))
+            {
+                ResetConnection();
+                return null;
+            }
         }
 
         public bool IsLinkUp(IBatteryDeviceContext ctx)
@@ -64,15 +78,16 @@ namespace PeripheralBatteryMonitor.Providers
 
         private void ConnectAndDiscover(IBatteryDeviceContext ctx)
         {
-            bleDev = null;
-            gattCharacteristic = null;
+            ResetConnection();
 
             Task<BluetoothLEDevice> bleTask = BluetoothLEDevice.FromIdAsync(ctx.DeviceId).AsTask();
             if (bleTask.Wait(bleConnectionTimeoutMs, new CancellationTokenSource().Token))
             {
                 bleDev = bleTask.Result;
-                if (bleDev != null)
-                    ctx.DeviceName = bleDev.Name;
+                if (bleDev == null)
+                    return;
+
+                ctx.DeviceName = bleDev.Name;
 
                 Task<GattDeviceServicesResult> batteryServiceTask = bleDev.GetGattServicesForUuidAsync(BATTERY_UUID, BluetoothCacheMode.Uncached).AsTask();
                 if (batteryServiceTask.Wait(bleReadTimeoutMs))
@@ -105,6 +120,33 @@ namespace PeripheralBatteryMonitor.Providers
         private bool IsGattConnected()
         {
             return ((gattCharacteristic != null) && (bleDev != null) && (bleDev.ConnectionStatus == BluetoothConnectionStatus.Connected));
+        }
+
+        private void ResetConnection()
+        {
+            gattCharacteristic = null;
+
+            if (bleDev != null)
+            {
+                try { bleDev.Dispose(); }
+                catch (ObjectDisposedException) { }
+                bleDev = null;
+            }
+        }
+
+        private static bool IsClosedObjectFailure(AggregateException error)
+        {
+            AggregateException flattened = error.Flatten();
+            if (flattened.InnerExceptions.Count == 0)
+                return false;
+
+            foreach (Exception inner in flattened.InnerExceptions)
+            {
+                if (!(inner is ObjectDisposedException))
+                    return false;
+            }
+
+            return true;
         }
     }
 }
