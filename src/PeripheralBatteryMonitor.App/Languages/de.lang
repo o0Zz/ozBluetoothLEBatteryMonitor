@@ -9,7 +9,6 @@ app.name = Peripheral Battery Monitor
 tray.refresh = Aktualisieren
 tray.restartBluetooth = Bluetooth neu starten
 tray.settings = Einstellungen
-tray.about = Info
 tray.exit = Beenden
 
 tray.device.known = {0}: {1} %

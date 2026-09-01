@@ -9,7 +9,6 @@ app.name = Peripheral Battery Monitor
 tray.refresh = 刷新
 tray.restartBluetooth = 重启蓝牙
 tray.settings = 设置
-tray.about = 关于
 tray.exit = 退出
 
 tray.device.known = {0}：{1}%

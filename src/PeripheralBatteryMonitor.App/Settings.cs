@@ -584,11 +584,6 @@ namespace PeripheralBatteryMonitor
             Activate();
         }
 
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ShowAbout();
-        }
-
         private void buttonAbout_Click(object sender, EventArgs e)
         {
             ShowAbout();
@@ -725,7 +720,6 @@ namespace PeripheralBatteryMonitor
             refreshToolStripMenuItem.Text = Strings.Get("tray.refresh");
             restartBluetoothToolStripMenuItem.Text = Strings.Get("tray.restartBluetooth");
             settingsToolStripMenuItem.Text = Strings.Get("tray.settings");
-            aboutToolStripMenuItem.Text = Strings.Get("tray.about");
             exitToolStripMenuItem.Text = Strings.Get("tray.exit");
 
             groupGeneral.Text = Strings.Get("settings.group.general");

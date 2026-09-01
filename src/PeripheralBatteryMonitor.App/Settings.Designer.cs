@@ -22,8 +22,8 @@
             this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.restartBluetoothToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.separatorDeviceActions = new System.Windows.Forms.ToolStripSeparator();
+            this.separatorExit = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.IconTimer = new System.Windows.Forms.Timer(this.components);
             this.layoutRoot = new System.Windows.Forms.TableLayoutPanel();
@@ -77,19 +77,20 @@
             //
             this.contextMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.refreshToolStripMenuItem,
-            this.restartBluetoothToolStripMenuItem,
             this.settingsToolStripMenuItem,
-            this.aboutToolStripMenuItem,
-            this.toolStripMenuItem1,
+            this.separatorDeviceActions,
+            this.restartBluetoothToolStripMenuItem,
+            this.refreshToolStripMenuItem,
+            this.separatorExit,
             this.exitToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip1";
             //
             // refreshToolStripMenuItem
             //
-            // First entry, because it is the only one that does something to the devices
-            // rather than opening a window. English literal like its neighbours -- see the
-            // Interface language notes; ApplyStrings overwrites it straight after this runs.
+            // Last before Exit on purpose: a tray menu opens upwards from the notification
+            // area, so the bottom entry is the one nearest the pointer, and this is the entry
+            // reached for most. English literal like its neighbours -- see the Interface
+            // language notes; ApplyStrings overwrites it straight after this runs.
             this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
             this.refreshToolStripMenuItem.Text = "Refresh";
             this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
@@ -97,8 +98,9 @@
             // restartBluetoothToolStripMenuItem
             //
             // Next to Refresh, for the same reason: both act on the devices instead of
-            // opening a window. Whether it is shown at all is decided once at startup, in
-            // the Settings constructor: a machine with no Bluetooth radio can only fail it.
+            // opening a window, and both belong near the pointer. Whether it is shown at all
+            // is decided once at startup, in the Settings constructor: a machine with no
+            // Bluetooth radio can only fail it.
             this.restartBluetoothToolStripMenuItem.Name = "restartBluetoothToolStripMenuItem";
             this.restartBluetoothToolStripMenuItem.Text = "Restart Bluetooth";
             this.restartBluetoothToolStripMenuItem.Click += new System.EventHandler(this.restartBluetoothToolStripMenuItem_Click);
@@ -109,15 +111,19 @@
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             //
-            // aboutToolStripMenuItem
+            // separatorDeviceActions
             //
-            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Text = "About";
-            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // The menu is three groups, ordered by distance from the pointer rather than by
+            // importance: the menu opens upwards out of the notification area, so the window
+            // opener sits at the top, the two device actions sit just above Exit where the
+            // pointer already is, and Exit keeps the bottom it has in every tray app. There
+            // is no About entry -- the Settings window carries the About... button, and
+            // duplicating it here made a five-item menu out of a three-item job.
+            this.separatorDeviceActions.Name = "separatorDeviceActions";
             //
-            // toolStripMenuItem1
+            // separatorExit
             //
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.separatorExit.Name = "separatorExit";
             //
             // exitToolStripMenuItem
             //
@@ -515,8 +521,8 @@
         private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem restartBluetoothToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator separatorDeviceActions;
+        private System.Windows.Forms.ToolStripSeparator separatorExit;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.TableLayoutPanel layoutRoot;
         private System.Windows.Forms.GroupBox groupGeneral;

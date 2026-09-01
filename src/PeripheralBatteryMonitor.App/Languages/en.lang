@@ -14,7 +14,6 @@ app.name = Peripheral Battery Monitor
 tray.refresh = Refresh
 tray.restartBluetooth = Restart Bluetooth
 tray.settings = Settings
-tray.about = About
 tray.exit = Exit
 
 # {0} device name, {1} battery percentage

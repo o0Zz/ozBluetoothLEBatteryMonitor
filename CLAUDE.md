@@ -59,7 +59,7 @@ Both projects use root namespace `PeripheralBatteryMonitor`. The four files at C
 
 ## Windows
 
-Three, plus the tray icon and its context menu (Refresh / Restart Bluetooth / Settings / About / Exit).
+Three, plus the tray icon and its context menu (Settings / Refresh / Restart Bluetooth / Exit).
 
 - **`Settings`** — the main form, and the tray host. It owns `NotifyIcon`, `IconTimer` and the context menu, and is kept hidden by `SetVisibleCore` unless the user asked for it. Two group boxes, *General* and *Devices and tray icons*, each setting followed by a `GrayText` hint line; a bottom strip with *About…* and *Close*. **There is no OK/Cancel**: every setting is written to `HKCU` in its own `CheckedChanged` handler the moment it changes (all of them through `Settings.SaveSetting`, the one place that opens the key and is certain to close it), so there is nothing pending for a Cancel to discard, and *Close* only hides the window.
 - **`Info`** — the per-device list, shown by double-clicking the tray icon. Sizable, so the `ListView` is `Dock = Fill` and the `StatusStrip` `Dock = Bottom`. It used to be neither: the list was pinned at `(0, -3)` with a hand-fitted `416x143` — the negative Y hid its top border and the height was eyeballed to clear the status strip, landing two pixels short of it. A control with no `Dock` and no `Anchor` does not move, so dragging the window border left the list stranded at its design size. `BorderStyle = None` because the list *is* the window here, which is what the `-3` was approximating.
