@@ -7,6 +7,7 @@ app.name = Peripheral Battery Monitor
 
 # ---- area di notifica ----
 tray.refresh = Aggiorna
+tray.restartBluetooth = Riavvia il Bluetooth
 tray.settings = Impostazioni
 tray.about = Informazioni
 tray.exit = Esci
@@ -15,6 +16,11 @@ tray.device.known = {0}: {1}%
 tray.device.unknown = {0}: ?
 tray.noDevice = Nessun dispositivo connesso
 notify.lowBattery = Batteria SCARICA su «{0}» ({1}%)!
+
+# {0} per quanti secondi la radio resta spenta
+notify.bluetoothRestart.started = Riavvio del Bluetooth. La radio resta spenta per {0} secondi.
+notify.bluetoothRestart.done = Bluetooth riavviato.
+notify.bluetoothRestart.failed = Impossibile riavviare il Bluetooth.\n{0}
 
 # ---- finestra Impostazioni ----
 settings.title = Peripheral Battery Monitor

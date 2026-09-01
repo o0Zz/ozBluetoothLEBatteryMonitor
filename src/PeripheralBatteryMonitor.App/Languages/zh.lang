@@ -7,6 +7,7 @@ app.name = Peripheral Battery Monitor
 
 # ---- 系统托盘 ----
 tray.refresh = 刷新
+tray.restartBluetooth = 重启蓝牙
 tray.settings = 设置
 tray.about = 关于
 tray.exit = 退出
@@ -15,6 +16,11 @@ tray.device.known = {0}：{1}%
 tray.device.unknown = {0}：未知
 tray.noDevice = 未连接设备
 notify.lowBattery = “{0}”的电量低（{1}%）！
+
+# {0} 蓝牙关闭的秒数
+notify.bluetoothRestart.started = 正在重启蓝牙，蓝牙将关闭 {0} 秒。
+notify.bluetoothRestart.done = 蓝牙已重启。
+notify.bluetoothRestart.failed = 无法重启蓝牙。\n{0}
 
 # ---- 设置窗口 ----
 settings.title = Peripheral Battery Monitor

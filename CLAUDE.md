@@ -26,6 +26,7 @@ There is no test project and no linter. Validation is by running the produced `.
 ```
 src/PeripheralBatteryMonitor.Core/   net48 — discovery and battery reading. ZERO UI dependencies.
   IDeviceNotification.cs             the UI callback contract
+  BluetoothRadio.cs                  the radio off/on toggle behind the tray's Restart Bluetooth
   DeviceManager.cs                   the two Bluetooth watchers + the HID reconcile
   HidDeviceSource.cs                 the non-Bluetooth discovery snapshot (internal)
   BatteryDevice.cs                   one device's state, bound to one provider
@@ -58,7 +59,7 @@ Both projects use root namespace `PeripheralBatteryMonitor`. The four files at C
 
 ## Windows
 
-Three, plus the tray icon and its context menu (Refresh / Settings / About / Exit).
+Three, plus the tray icon and its context menu (Refresh / Restart Bluetooth / Settings / About / Exit).
 
 - **`Settings`** — the main form, and the tray host. It owns `NotifyIcon`, `IconTimer` and the context menu, and is kept hidden by `SetVisibleCore` unless the user asked for it. Two group boxes, *General* and *Devices and tray icons*, each setting followed by a `GrayText` hint line; a bottom strip with *About…* and *Close*. **There is no OK/Cancel**: every setting is written to `HKCU` in its own `CheckedChanged` handler the moment it changes (all of them through `Settings.SaveSetting`, the one place that opens the key and is certain to close it), so there is nothing pending for a Cancel to discard, and *Close* only hides the window.
 - **`Info`** — the per-device list, shown by double-clicking the tray icon. Sizable, so the `ListView` is `Dock = Fill` and the `StatusStrip` `Dock = Bottom`. It used to be neither: the list was pinned at `(0, -3)` with a hand-fitted `416x143` — the negative Y hid its top border and the height was eyeballed to clear the status strip, landing two pixels short of it. A control with no `Dock` and no `Anchor` does not move, so dragging the window border left the list stranded at its design size. `BorderStyle = None` because the list *is* the window here, which is what the `-3` was approximating.
@@ -77,6 +78,38 @@ which reads cached state only; the button polls first, then repopulates. A `Tool
 was chosen over a real `Button` because it auto-sizes to its text, so "Aktualisieren" widens
 the item instead of being clipped — and because clicking one does not deactivate the form,
 which matters here: `Info_Deactivate` hides the window.
+
+**Restarting the Bluetooth stack** is the tray menu's second device-facing entry, for the
+one failure polling cannot fix: a wedged stack where every provider times out until the
+radio is reset. `Settings.RestartBluetooth` drives `BluetoothRadio` in Core — off, five
+seconds, on — which is the same thing as the Bluetooth toggle in Windows Settings.
+- **The radio, not `bthserv`.** Stopping the Bluetooth Support Service needs administrator
+  rights and does not touch the radio; disabling the device node resets it but also needs
+  elevation. `Windows.Devices.Radios` needs neither, which is what keeps this app
+  non-elevated.
+- **`BluetoothRadio.RequestAccess` runs on the UI thread and the restart does not.** The
+  access request is the one call that can put a consent prompt on screen, so it wants a
+  thread with a message loop; the restart then goes to a `ThreadPool` worker, because
+  sleeping five seconds on the UI thread freezes the tray icon and its menu and has Windows
+  declare the app hung. Completion returns through `BeginInvoke` — guarded by `IsDisposed`,
+  since *Exit* is reachable during the downtime and posting to a dead form would throw on a
+  thread where nothing catches it.
+- **`IconTimer` is stopped for the duration.** A tick landing while the radio is down would
+  wait out a 30 s GATT connect timeout per BLE device, on the UI thread, to read nothing.
+- **Discovery is started over on the way back**, not left to the watchers: every Bluetooth
+  device dropped off while the radio was down, and a watcher that had already finished its
+  enumeration never reports them returning. HID devices need nothing — the poll tick
+  re-snapshots those.
+- **Progress is a balloon but a failure is a message box**, and neither goes through
+  `Settings.Notify`: that honours the notifications checkbox, which is about a device
+  reaching 20% rather than about feedback for something the user just clicked. A failure
+  leaves the radio *off*, so it must not be droppable. `DescribeFailure` unwraps the
+  `AggregateException` that a faulted WinRT task arrives as, whose own message is a sentence
+  about aggregate exceptions.
+- **The entry hides itself on a machine with no Bluetooth radio**, decided once in the
+  `Settings` constructor rather than on `Opening`: enumerating radios is a WinRT call, and
+  the moment the user reaches for this entry is the moment the stack has stopped answering —
+  a check there would hang the very menu it is decorating.
 
 **Lay these out with panels, not coordinates.** `Settings` is a `TableLayoutPanel` of two `GroupBox`es, each holding a top-down `FlowLayoutPanel`; every hint is an `AutoSize` label with `MaximumSize = (400, 0)` so it wraps and grows downwards. The form itself is `AutoSize` — the height that fits depends on where those labels wrap, which depends on the display scale, so the only version that is right at both 100% and 150% is the one that asks its own contents. A fixed `ClientSize` here clips at the bottom.
 
@@ -146,6 +179,7 @@ Three layers, all in namespace `PeripheralBatteryMonitor`; the first two are the
 2. **UI** — see **Windows** above. `Settings.UpdateIcon()` is the polling tick: it calls `deviceManager.refreshHidDevices()` (the HID sources have no watcher, so the tick is what picks up a plugged/unplugged dongle), then `device.UpdateBatteryLevel()` on every tracked device, **drops every device that is not `IsConnected()`**, picks the lowest battery level across the ones left, maps that to one of five tray icons (`Icon_Battery_20/40/60/80/100`), updates the tooltip, and fires a balloon notification once per low-battery transition (`lowBatteryNotificationDone` latch resets when level rises above 20%). An `updatingIcon` latch makes it non-re-entrant: HID discovery reports new devices *synchronously*, and `OnNewDevice` calls back into `UpdateIcon`.
 3. **`PeripheralBatteryMonitor.Core`** — discovery and battery reading, one type per file:
    - `IDeviceNotification.cs` — the UI callback contract; exposes `OnNewDevice` and `OnDeviceRemoved`.
+   - `BluetoothRadio.cs` (`BluetoothRadio`, static) — turns every `RadioKind.Bluetooth` radio off, waits, and turns it back on, via WinRT `Windows.Devices.Radios`. Nothing else in Core uses it; it exists for the tray's **Restart Bluetooth** entry. See **Restarting the Bluetooth stack**.
    - `DeviceManager.cs` (`DeviceManager`) runs **two** `DeviceInformation.CreateWatcher` instances in parallel: one for BLE (protocol GUID `{bb7bb05e-5972-42b5-94fc-76eaa7084d49}`) and one for Bluetooth Classic / BR-EDR (`{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}`). Both feed the same `ConcurrentDictionary<string, BatteryDevice>` keyed by `devInfo.Id`, each device tagged with a `DeviceTransport` (`BluetoothLowEnergy` / `BluetoothClassic`). Only **paired** devices (`devInfo.Pairing.IsPaired`) are tracked. A phone may appear once on each transport, and `ReconcileSiblingNames` copies the Classic endpoint's display name onto its BLE sibling, which fixes opaque iOS BLE local names without guessing from the text. **The `System.Devices.Aep.ContainerId` is what proves the two endpoints are one physical device** — for a *paired* device it is the real PnP container id (verified: a paired device's AEP bag and its nodes in the device tree carry the same GUID). An *unpaired* endpoint instead gets a container synthesised per protocol and address, so the two transports of one unpaired device do **not** share it — irrelevant here, since only paired devices are tracked. The `Communication.Phone` category only narrows the scope and is required on **either** endpoint, not on both: the container already establishes same-device, and the BLE endpoint of a phone is not reliably categorised, so demanding it there is enough on its own to silently disable the whole reconcile. The watcher's `Updated` handler does two things: removes the device if `System.Devices.Aep.IsPaired` flips to false, and forwards property bag changes into the cached `BatteryDevice` via `UpdateProperties`. `Removed` removes the device. `scanForEver` restarts each watcher in its `Stopped` handler for continuous discovery. `refreshHidDevices()` is the **second, non-Bluetooth source**: it reconciles `DeviceTransport.UsbHid` entries against a fresh `HidDeviceSource.Discover()` snapshot (add newly present, remove vanished, never touch Bluetooth entries). `scan()` deliberately does *not* call it — see the re-entrancy note in `UpdateIcon` above; the poll tick is the single driver.
    - **Known limitation: this makes the two entries read alike, it does not merge them.** A dual-mode phone still occupies two rows in `Info` and two tray tooltip lines, now under the same name. The fix at the root would be to track one device per container and pick the endpoint that can actually report a battery; that was left alone deliberately, because choosing the wrong endpoint loses the reading and no dual-mode device was available to verify against.
    - `HidDeviceSource.cs` (`HidDeviceSource`, static) — discovery for devices that reach the PC over raw USB HID and so have **no** association endpoint and no pairing (a peripheral on its own vendor dongle). There is nothing to subscribe to, so this is a plain snapshot, cheap enough to re-run every tick. It surfaces only interfaces claimed by a registered `HidDeviceSpec`, derives the device id from the HID interface path (the analogue of `DeviceInformation.Id`; moving the dongle to another USB port therefore reads as a different device), and seeds the property bag with the `PeripheralBatteryMonitor.Hid.*` keys so a provider can reopen that exact interface without re-enumerating.
@@ -188,7 +222,7 @@ Three layers, all in namespace `PeripheralBatteryMonitor`; the first two are the
 
 ### WinRT bridging
 
-Core consumes WinRT APIs (`Windows.Devices.Bluetooth.*`, `Windows.Devices.Enumeration`, `Windows.Storage.Streams`) from .NET Framework 4.8 via the `DirectWindowsWinmd.Net 10.0.15063.0` NuGet package, which provides `Windows.winmd` and `System.Runtime.WindowsRuntime.dll` references. When adding new WinRT calls, expect `IAsyncOperation<T>` — convert with `.AsTask()` and use `Task.Wait(timeoutMs)` rather than `await` (the codebase is synchronous on the UI thread inside the timer tick).
+Core consumes WinRT APIs (`Windows.Devices.Bluetooth.*`, `Windows.Devices.Enumeration`, `Windows.Devices.Radios`, `Windows.Storage.Streams`) from .NET Framework 4.8 via the `DirectWindowsWinmd.Net 10.0.15063.0` NuGet package, which provides `Windows.winmd` and `System.Runtime.WindowsRuntime.dll` references. When adding new WinRT calls, expect `IAsyncOperation<T>` — convert with `.AsTask()` and use `Task.Wait(timeoutMs)` rather than `await` (the codebase is synchronous on the UI thread inside the timer tick).
 
 The `PackageReference` is `ExcludeAssets=runtime`, the equivalent of the old `<Private>False</Private>`: the `System.Runtime.WindowsRuntime` facade is part of .NET Framework 4.5+ and resolves from the framework directory at run time, and a `.winmd` is a compile-time contract with nothing to copy. **It is declared on Core, not App, and reaches App transitively** — which App needs, because `BatteryDevice` has a public constructor taking a WinRT `DeviceInformation`.
 

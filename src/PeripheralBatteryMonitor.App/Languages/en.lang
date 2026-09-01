@@ -12,6 +12,7 @@ app.name = Peripheral Battery Monitor
 
 # ---- tray icon ----
 tray.refresh = Refresh
+tray.restartBluetooth = Restart Bluetooth
 tray.settings = Settings
 tray.about = About
 tray.exit = Exit
@@ -21,6 +22,12 @@ tray.device.known = {0}: {1}%
 tray.device.unknown = {0}: ?
 tray.noDevice = No device connected
 notify.lowBattery = Battery LOW on '{0}' ({1}%) !
+
+# {0} how many seconds the radio stays off
+notify.bluetoothRestart.started = Restarting Bluetooth. The radio goes off for {0} seconds.
+notify.bluetoothRestart.done = Bluetooth restarted.
+# {0} the reason Windows gave
+notify.bluetoothRestart.failed = Could not restart Bluetooth.\n{0}
 
 # ---- Settings window ----
 settings.title = Peripheral Battery Monitor

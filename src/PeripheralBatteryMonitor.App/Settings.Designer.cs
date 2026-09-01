@@ -20,6 +20,7 @@
             this.NotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.restartBluetoothToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
@@ -77,6 +78,7 @@
             this.contextMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.refreshToolStripMenuItem,
+            this.restartBluetoothToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.aboutToolStripMenuItem,
             this.toolStripMenuItem1,
@@ -91,6 +93,15 @@
             this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
             this.refreshToolStripMenuItem.Text = "Refresh";
             this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
+            //
+            // restartBluetoothToolStripMenuItem
+            //
+            // Next to Refresh, for the same reason: both act on the devices instead of
+            // opening a window. Whether it is shown at all is decided once at startup, in
+            // the Settings constructor: a machine with no Bluetooth radio can only fail it.
+            this.restartBluetoothToolStripMenuItem.Name = "restartBluetoothToolStripMenuItem";
+            this.restartBluetoothToolStripMenuItem.Text = "Restart Bluetooth";
+            this.restartBluetoothToolStripMenuItem.Click += new System.EventHandler(this.restartBluetoothToolStripMenuItem_Click);
             //
             // settingsToolStripMenuItem
             //
@@ -502,6 +513,7 @@
         private System.Windows.Forms.Timer IconTimer;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem restartBluetoothToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;

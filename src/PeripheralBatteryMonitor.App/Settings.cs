@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace PeripheralBatteryMonitor
@@ -17,12 +18,17 @@ namespace PeripheralBatteryMonitor
         private const string AutoStartPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
         private const string AutoStartValue = "PeripheralBatteryMonitor";
 
+            //How long the radio stays off in a Bluetooth restart. Long enough for Windows to
+            //tear the stack down and let the devices notice, short enough to sit through.
+        private const int BluetoothRestartDowntimeMs = 5000;
+
         private DeviceManager deviceManager = null;
         private Info infoForm = null;
         private bool UserClose = false;
         private bool UserShow = false;
         private bool isInitializing = true;
         private bool updatingIcon = false;
+        private bool restartingBluetooth = false;
         private Dictionary<string, NotifyIcon> deviceIcons = new Dictionary<string, NotifyIcon>();
         private Dictionary<string, bool> deviceLowBatteryNotificationDone = new Dictionary<string, bool>();
 
@@ -57,6 +63,13 @@ namespace PeripheralBatteryMonitor
             }
 
             ApplyStrings();
+
+                //Asked once, here, rather than every time the menu opens: enumerating radios
+                //is a WinRT call, and the one moment the user reaches for this entry is the
+                //moment the stack has stopped answering -- a check on Opening would then hang
+                //the very menu it is decorating. A machine with no radio at all is not going
+                //to grow one mid-session.
+            restartBluetoothToolStripMenuItem.Visible = BluetoothRadio.IsAvailable();
 
                 //Instantiate everything
             deviceManager = new DeviceManager(new DeviceNotification(this));
@@ -200,6 +213,129 @@ namespace PeripheralBatteryMonitor
         private void refreshToolStripMenuItem_Click(object sender, EventArgs e)
         {
             RefreshNow();
+        }
+
+        private void restartBluetoothToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RestartBluetooth();
+        }
+
+        /// <summary>
+        /// Switches the Bluetooth radio off, waits, and switches it back on -- the shortcut
+        /// for what would otherwise be a trip to the Windows Settings toggle, which is the
+        /// only way out of a stack that has wedged. See <see cref="BluetoothRadio"/> for why
+        /// the radio and not the Bluetooth service.
+        ///
+        /// Progress is reported with balloons rather than a window, and deliberately not
+        /// through <see cref="Notify"/>: that honours the notifications checkbox, which is
+        /// about a device reaching 20% and not about feedback for something the user just
+        /// clicked. A failure gets a message box, because it leaves the radio off and is
+        /// worth more than a balloon that may never be shown.
+        /// </summary>
+        private void RestartBluetooth()
+        {
+            if (restartingBluetooth)
+                return;
+
+            try
+            {
+                    //On the UI thread on purpose: this is the one call that can put a consent
+                    //prompt on screen, so it wants a thread with a message loop.
+                BluetoothRadio.RequestAccess();
+            }
+            catch (Exception error)
+            {
+                ReportBluetoothRestartFailure(error);
+                return;
+            }
+
+            restartingBluetooth = true;
+            restartBluetoothToolStripMenuItem.Enabled = false;
+
+                //Hold the poll off for the duration. A tick that lands while the radio is
+                //down would sit on the UI thread waiting out a 30 s GATT connect timeout per
+                //BLE device -- and it has nothing to read anyway. RefreshNow at the end
+                //starts it again; the failure path below does it by hand.
+            IconTimer.Stop();
+
+            NotifyIcon.ShowBalloonTip(300, Strings.Get("app.name"), Strings.Format("notify.bluetoothRestart.started", BluetoothRestartDowntimeMs / 1000), ToolTipIcon.Info);
+
+                //The radio is off for seconds, and this thread is the one that draws the tray
+                //icon and its menu: doing the wait here would freeze both for the whole
+                //downtime and have Windows call the app hung. Completion hops back through
+                //BeginInvoke -- the constructor forces the handle so this is safe from a
+                //worker thread.
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                Exception failure = null;
+                try
+                {
+                    BluetoothRadio.Restart(BluetoothRestartDowntimeMs);
+                }
+                catch (Exception error)
+                {
+                    failure = error;
+                }
+
+                    //Exit is reachable during the downtime, and posting to a form that has
+                    //gone would throw on this thread -- where nothing catches it and the
+                    //process dies after the user already asked it to quit.
+                try
+                {
+                    if (!IsDisposed)
+                        BeginInvoke(new Action<Exception>(BluetoothRestartFinished), failure);
+                }
+                catch (ObjectDisposedException) { }
+                catch (InvalidOperationException) { }
+            });
+        }
+
+        private void BluetoothRestartFinished(Exception failure)
+        {
+            restartingBluetooth = false;
+            restartBluetoothToolStripMenuItem.Enabled = true;
+
+            if (failure != null)
+            {
+                IconTimer.Start();
+                ReportBluetoothRestartFailure(failure);
+                return;
+            }
+
+                //Every Bluetooth device dropped off while the radio was down, and a watcher
+                //that had already finished its enumeration will not report them coming back
+                //-- so discovery starts over instead of waiting for a scan that is not going
+                //to happen. HID devices are unaffected; the poll tick re-snapshots those.
+            deviceManager.stopScan();
+            deviceManager.scan(checkBoxScanForEver.Checked);
+
+            NotifyIcon.ShowBalloonTip(300, Strings.Get("app.name"), Strings.Get("notify.bluetoothRestart.done"), ToolTipIcon.Info);
+
+            RefreshNow();
+        }
+
+        private void ReportBluetoothRestartFailure(Exception error)
+        {
+            MessageBox.Show(Strings.Format("notify.bluetoothRestart.failed", DescribeFailure(error)),
+                            Strings.Get("app.name"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        /// <summary>
+        /// The one line worth showing the user out of an exception. Everything in
+        /// <see cref="BluetoothRadio"/> waits on a WinRT task, and a task that faulted
+        /// reports it as an AggregateException -- whose own Message is a sentence about
+        /// aggregate exceptions rather than about Bluetooth.
+        /// </summary>
+        private static string DescribeFailure(Exception error)
+        {
+            AggregateException aggregate = error as AggregateException;
+            if (aggregate != null)
+            {
+                AggregateException flattened = aggregate.Flatten();
+                if (flattened.InnerExceptions.Count > 0)
+                    return flattened.InnerExceptions[0].Message;
+            }
+            return error.Message;
         }
 
         private static Icon GetIconForBatteryLevel(int level)
@@ -587,6 +723,7 @@ namespace PeripheralBatteryMonitor
             Text = Strings.Get("settings.title");
 
             refreshToolStripMenuItem.Text = Strings.Get("tray.refresh");
+            restartBluetoothToolStripMenuItem.Text = Strings.Get("tray.restartBluetooth");
             settingsToolStripMenuItem.Text = Strings.Get("tray.settings");
             aboutToolStripMenuItem.Text = Strings.Get("tray.about");
             exitToolStripMenuItem.Text = Strings.Get("tray.exit");

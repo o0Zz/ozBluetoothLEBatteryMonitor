@@ -7,6 +7,7 @@ app.name = Peripheral Battery Monitor
 
 # ---- Infobereich ----
 tray.refresh = Aktualisieren
+tray.restartBluetooth = Bluetooth neu starten
 tray.settings = Einstellungen
 tray.about = Info
 tray.exit = Beenden
@@ -15,6 +16,11 @@ tray.device.known = {0}: {1} %
 tray.device.unknown = {0}: ?
 tray.noDevice = Kein Gerät verbunden
 notify.lowBattery = Akku NIEDRIG bei „{0}“ ({1} %)!
+
+# {0} Dauer in Sekunden, die das Funkmodul aus bleibt
+notify.bluetoothRestart.started = Bluetooth wird neu gestartet. Das Funkmodul bleibt {0} Sekunden aus.
+notify.bluetoothRestart.done = Bluetooth neu gestartet.
+notify.bluetoothRestart.failed = Bluetooth konnte nicht neu gestartet werden.\n{0}
 
 # ---- Fenster „Einstellungen“ ----
 settings.title = Peripheral Battery Monitor
